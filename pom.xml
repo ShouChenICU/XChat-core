@@ -37,7 +37,7 @@
                     <finalName>${project.name}-${project.version}</finalName>
                     <archive>
                         <manifest>
-                            <mainClass>icu.xchat.test.test1</mainClass>
+                            <mainClass>icu.xchat.test.Test1</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
