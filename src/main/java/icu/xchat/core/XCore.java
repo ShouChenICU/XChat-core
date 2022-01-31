@@ -6,4 +6,13 @@ package icu.xchat.core;
  * @author shouchen
  */
 public class XCore {
+    private static Configuration configuration;
+
+    public static Configuration getConfiguration() {
+        return configuration;
+    }
+
+    public static void init() {
+        configuration = new Configuration();
+    }
 }
