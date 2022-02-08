@@ -2,6 +2,7 @@ package icu.xchat.core.net;
 
 import icu.xchat.core.callbacks.OnlineServerListUpdateCallback;
 import icu.xchat.core.entities.ServerInfo;
+import icu.xchat.core.exceptions.TaskException;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -30,7 +31,7 @@ public final class ServerManager {
      * @param serverInfo 服务器信息
      * @throws IOException 连接失败
      */
-    public static void connectServer(ServerInfo serverInfo) throws IOException {
+    public static void connectServer(ServerInfo serverInfo) throws IOException, TaskException {
         synchronized (onlineServersMap) {
             if (onlineServersMap.containsKey(serverInfo.getServerCode())) {
                 return;

@@ -7,6 +7,9 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.security.*;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
 
 /**
  * 加解密工具类
@@ -49,5 +52,15 @@ public final class EncryptUtils {
         Cipher cipher = Cipher.getInstance(algorithm);
         cipher.init(Cipher.PRIVATE_KEY, privateKey);
         return cipher;
+    }
+
+    public static PublicKey getPublicKey(String algorithm, byte[] encode) throws NoSuchAlgorithmException, InvalidKeySpecException {
+        KeyFactory keyFactory = KeyFactory.getInstance(algorithm);
+        return keyFactory.generatePublic(new X509EncodedKeySpec(encode));
+    }
+
+    public static PrivateKey getPrivateKey(String algorithm, byte[] encode) throws NoSuchAlgorithmException, InvalidKeySpecException {
+        KeyFactory keyFactory = KeyFactory.getInstance(algorithm);
+        return keyFactory.generatePrivate(new PKCS8EncodedKeySpec(encode));
     }
 }

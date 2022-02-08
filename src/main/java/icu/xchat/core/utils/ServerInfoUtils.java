@@ -4,6 +4,7 @@ import icu.xchat.core.entities.ServerInfo;
 import org.bson.BSONObject;
 import org.bson.BasicBSONDecoder;
 
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.zip.DataFormatException;
 
@@ -21,6 +22,9 @@ public final class ServerInfoUtils {
      * @return 服务器信息
      */
     public static ServerInfo fromCode(String serverConnectCode) throws DataFormatException {
+        if (serverConnectCode == null) {
+            throw new NullPointerException();
+        }
         byte[] dat = Base64.getDecoder().decode(serverConnectCode);
         dat = CompressionUtils.deCompress(dat);
         BSONObject object = new BasicBSONDecoder().readObject(dat);

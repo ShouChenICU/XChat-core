@@ -3,6 +3,7 @@ package icu.xchat.core;
 import icu.xchat.core.callbacks.OnlineServerListUpdateCallback;
 import icu.xchat.core.entities.ServerInfo;
 import icu.xchat.core.exceptions.IdentityLoadException;
+import icu.xchat.core.exceptions.TaskException;
 import icu.xchat.core.net.ServerManager;
 import icu.xchat.core.net.WorkerThreadPool;
 
@@ -21,8 +22,13 @@ public class XChatCore {
         return configuration;
     }
 
-    public static void init(Configuration configuration) throws IOException {
-        XChatCore.configuration = configuration == null ? new Configuration() : configuration;
+    public static void init(Configuration configuration) {
+        XChatCore.configuration = configuration;
+        if (XChatCore.configuration == null) {
+            XChatCore.configuration = new Configuration();
+        }
+        assert configuration != null;
+        WorkerThreadPool.init(configuration.getWorkerThreadCount());
     }
 
     /**
@@ -38,6 +44,9 @@ public class XChatCore {
         }
     }
 
+    public static Identity getIdentity() {
+        return identity;
+    }
 
     public static synchronized void logout() {
         if (XChatCore.identity != null) {
@@ -59,7 +68,7 @@ public class XChatCore {
             WorkerThreadPool.execute(() -> {
                 try {
                     ServerManager.connectServer(serverInfo);
-                } catch (IOException e) {
+                } catch (IOException | TaskException e) {
                     e.printStackTrace();
                 }
             });

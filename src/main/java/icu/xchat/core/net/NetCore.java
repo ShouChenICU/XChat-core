@@ -46,14 +46,7 @@ public class NetCore {
                 if (key.isReadable()) {
                     Server server = (Server) key.attachment();
                     key.cancel();
-                    WorkerThreadPool.execute(() -> {
-                        try {
-                            server.doRead();
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                            ServerManager.closeServer(server);
-                        }
-                    });
+                    WorkerThreadPool.execute(server::doRead);
                 }
             }
         }

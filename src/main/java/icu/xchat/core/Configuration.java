@@ -15,6 +15,7 @@ public class Configuration {
     private static final String DATABASE_URL_DEFAULT = "jdbc:sqlite:xchat-core.db";
     private static final String DATABASE_USERNAME = "database.username";
     private static final String DATABASE_PASSWORD = "database.password";
+    private static final String WORKER_THREAD_COUNT = "worker-thread-count";
     private final Map<String, String> configMap;
 
     public Configuration() {
@@ -22,7 +23,8 @@ public class Configuration {
         this.setDatabaseType(DATABASE_TYPE_DEFAULT)
                 .setDatabaseUsername("")
                 .setDatabasePassword("")
-                .setDatabaseUrl(DATABASE_URL_DEFAULT);
+                .setDatabaseUrl(DATABASE_URL_DEFAULT)
+                .setWorkerThreadCount(Runtime.getRuntime().availableProcessors());
     }
 
     public Configuration setDatabaseType(String type) {
@@ -59,5 +61,20 @@ public class Configuration {
 
     public String getDatabasePassword() {
         return configMap.getOrDefault(DATABASE_PASSWORD, "");
+    }
+
+    public Configuration setWorkerThreadCount(int count) {
+        configMap.put(WORKER_THREAD_COUNT, String.valueOf(count));
+        return this;
+    }
+
+    public int getWorkerThreadCount() {
+        int count;
+        try {
+            count = Integer.parseInt(configMap.get(WORKER_THREAD_COUNT));
+        } catch (Exception e) {
+            count = Runtime.getRuntime().availableProcessors();
+        }
+        return count;
     }
 }

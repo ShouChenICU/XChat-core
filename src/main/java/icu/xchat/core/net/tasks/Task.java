@@ -9,6 +9,20 @@ import icu.xchat.core.net.PacketBody;
  */
 public interface Task {
     /**
+     * 获取任务id
+     *
+     * @return 任务id
+     */
+    int getTaskId();
+
+    /**
+     * 设置任务id
+     *
+     * @param taskId 任务id
+     */
+    Task setTaskId(int taskId);
+
+    /**
      * 获取任务进度
      *
      * @return 任务进度
@@ -19,9 +33,8 @@ public interface Task {
      * 处理一个包
      *
      * @param packetBody 包
-     * @return 下一个发送的包，为null则结束任务
      */
-    PacketBody handlePacket(PacketBody packetBody) throws Exception;
+    void handlePacket(PacketBody packetBody) throws Exception;
 
     /**
      * 起步包
