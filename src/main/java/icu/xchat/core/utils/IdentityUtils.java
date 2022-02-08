@@ -10,10 +10,7 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.io.*;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
@@ -113,5 +110,20 @@ public final class IdentityUtils {
         dat = CompressionUtils.compress(dat);
         Cipher cipher = EncryptUtils.getEncryptCipher(EncryptUtils.genAesKey(password));
         return cipher.doFinal(dat);
+    }
+
+    /**
+     * 存储身份到文件
+     *
+     * @param identity  身份
+     * @param password  密码
+     * @param storeFile 存储文件
+     */
+    public static void storeIdentity(Identity identity, String password, File storeFile) throws NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException, IOException {
+        byte[] dat = encodeIdentity(identity, password);
+        try (FileOutputStream outputStream = new FileOutputStream(storeFile)) {
+            outputStream.write(dat);
+            outputStream.flush();
+        }
     }
 }

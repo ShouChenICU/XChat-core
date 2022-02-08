@@ -8,11 +8,11 @@ import java.util.Base64;
 import java.util.zip.DataFormatException;
 
 /**
- * 服务器连接码工具类
+ * 服务器信息工具类
  *
  * @author shouchen
  */
-public final class ServerConnectCodeUtils {
+public final class ServerInfoUtils {
 
     /**
      * 根据服务器连接码生成一个服务器信息实体

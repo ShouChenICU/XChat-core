@@ -1,5 +1,6 @@
 package icu.xchat.core.net;
 
+import icu.xchat.core.callbacks.OnlineServerListUpdateCallback;
 import icu.xchat.core.entities.ServerInfo;
 
 import java.io.IOException;
@@ -15,9 +16,12 @@ import java.util.Map;
  */
 public final class ServerManager {
     private static final Map<String, Server> onlineServersMap;
+    private static OnlineServerListUpdateCallback onlineServerListUpdateCallback;
 
     static {
         onlineServersMap = new HashMap<>();
+        onlineServerListUpdateCallback = (list) -> {
+        };
     }
 
     /**
@@ -33,6 +37,7 @@ public final class ServerManager {
             }
             Server server = new Server(serverInfo);
             onlineServersMap.put(serverInfo.getServerCode(), server);
+            onlineServerListUpdateCallback.onlineServerListUpdate(getOnlineServersList());
         }
     }
 
@@ -42,6 +47,7 @@ public final class ServerManager {
         }
         synchronized (onlineServersMap) {
             onlineServersMap.remove(server.getServerInfo().getServerCode());
+            onlineServerListUpdateCallback.onlineServerListUpdate(getOnlineServersList());
         }
         server.getSelectionKey().cancel();
         NetCore.wakeup();
@@ -62,6 +68,7 @@ public final class ServerManager {
         synchronized (onlineServersMap) {
             if (onlineServersMap.containsKey(serverCode)) {
                 server = onlineServersMap.remove(serverCode);
+                onlineServerListUpdateCallback.onlineServerListUpdate(getOnlineServersList());
             } else {
                 return;
             }
@@ -92,5 +99,9 @@ public final class ServerManager {
 
     public static void closeAll() {
 
+    }
+
+    public static void setOnlineServerListUpdateCallback(OnlineServerListUpdateCallback onlineServerListUpdateCallback) {
+        ServerManager.onlineServerListUpdateCallback = onlineServerListUpdateCallback;
     }
 }

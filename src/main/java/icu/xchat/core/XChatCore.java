@@ -1,7 +1,10 @@
 package icu.xchat.core;
 
-import icu.xchat.core.net.NetCore;
+import icu.xchat.core.callbacks.OnlineServerListUpdateCallback;
+import icu.xchat.core.entities.ServerInfo;
+import icu.xchat.core.exceptions.IdentityLoadException;
 import icu.xchat.core.net.ServerManager;
+import icu.xchat.core.net.WorkerThreadPool;
 
 import java.io.IOException;
 
@@ -27,16 +30,48 @@ public class XChatCore {
      *
      * @param identity 身份
      */
-    public static synchronized void loadIdentity(Identity identity) {
+    public static synchronized void loadIdentity(Identity identity) throws IdentityLoadException {
         if (XChatCore.identity == null) {
             XChatCore.identity = identity;
+        } else {
+            throw new IdentityLoadException("重复加载身份");
         }
     }
+
 
     public static synchronized void logout() {
         if (XChatCore.identity != null) {
             ServerManager.closeAll();
             XChatCore.identity = null;
+        }
+    }
+
+    /**
+     * 服务器相关方法
+     */
+    public static class Server {
+        /**
+         * 尝试连接一个服务器
+         *
+         * @param serverInfo 服务器信息
+         */
+        public static void attemptConnectServer(ServerInfo serverInfo) {
+            WorkerThreadPool.execute(() -> {
+                try {
+                    ServerManager.connectServer(serverInfo);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });
+        }
+    }
+
+    /**
+     * 回调方法设置
+     */
+    public static class CallBack {
+        public static void setOnlineServerListUpdateCallback(OnlineServerListUpdateCallback callback) {
+            ServerManager.setOnlineServerListUpdateCallback(callback);
         }
     }
 }

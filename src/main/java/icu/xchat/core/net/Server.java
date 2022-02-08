@@ -1,18 +1,23 @@
 package icu.xchat.core.net;
 
 import icu.xchat.core.entities.ServerInfo;
-import icu.xchat.core.exceptions.UnknowTaskException;
+import icu.xchat.core.exceptions.PacketException;
+import icu.xchat.core.exceptions.TaskException;
 import icu.xchat.core.net.tasks.CommandTask;
+import icu.xchat.core.net.tasks.LoginTask;
 import icu.xchat.core.net.tasks.Task;
 import icu.xchat.core.utils.PackageUtils;
 import icu.xchat.core.utils.PayloadTypes;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeoutException;
 
 /**
  * 服务器连接实体类
@@ -23,9 +28,11 @@ public class Server {
     private final SocketChannel channel;
     private SelectionKey selectionKey;
     private final ByteBuffer readBuffer;
+    private final ByteBuffer writeBuffer;
     private final ConcurrentHashMap<Integer, Task> taskMap;
     private final PackageUtils packageUtils;
     private final ServerInfo serverInfo;
+    private long heartTime;
     private int taskId;
     private int packetStatus;
     private int packetLength;
@@ -36,8 +43,14 @@ public class Server {
         this.channel = SocketChannel.open();
         this.channel.socket().connect(new InetSocketAddress(serverInfo.getHost(), serverInfo.getPort()), 1000);
         this.readBuffer = ByteBuffer.allocateDirect(256);
+        this.writeBuffer = ByteBuffer.allocateDirect(256);
         this.taskMap = new ConcurrentHashMap<>();
         this.packageUtils = new PackageUtils();
+        this.heartTime = System.currentTimeMillis();
+        this.taskId = 1;
+        this.packetStatus = 0;
+        this.packetLength = 0;
+        addTask(new LoginTask());
     }
 
     public SocketChannel getChannel() {
@@ -109,7 +122,7 @@ public class Server {
                         // TODO: 2022/2/6
                         break;
                     default:
-                        throw new UnknowTaskException();
+                        throw new TaskException("未知的任务类型");
                 }
                 taskMap.put(packetBody.getTaskId(), task);
             }
@@ -125,7 +138,66 @@ public class Server {
         }
     }
 
-    public void postPacket(PacketBody packetBody) {
+    /**
+     * 添加一个任务
+     *
+     * @param task 任务
+     */
+    public void addTask(Task task) {
+        PacketBody packetBody = task.startPacket();
+        if (packetBody == null) {
+            return;
+        }
+        synchronized (taskMap) {
+            taskMap.put(taskId++, task);
+        }
+        WorkerThreadPool.execute(() -> {
+            try {
+                postPacket(packetBody);
+            } catch (IllegalBlockSizeException | BadPaddingException | PacketException | IOException | InterruptedException | TimeoutException e) {
+                e.printStackTrace();
+                ServerManager.closeServer(this);
+            }
+        });
+    }
 
+    /**
+     * 发送一个包
+     *
+     * @param packetBody 包
+     */
+    public void postPacket(PacketBody packetBody) throws IllegalBlockSizeException, BadPaddingException, PacketException, IOException, InterruptedException, TimeoutException {
+        byte[] dat = packageUtils.encodePacket(packetBody);
+        int length = dat.length;
+        if (length > 65535) {
+            throw new PacketException("包长度错误 " + length);
+        }
+        synchronized (channel) {
+            writeBuffer.put((byte) (length % 256))
+                    .put((byte) (length / 256));
+            int offset = 0;
+            while (offset < dat.length) {
+                if (writeBuffer.hasRemaining()) {
+                    length = Math.min(writeBuffer.remaining(), dat.length);
+                    writeBuffer.put(dat, offset, length);
+                    offset += length;
+                }
+                writeBuffer.flip();
+                int waitCount = 0;
+                while (writeBuffer.hasRemaining()) {
+                    if (channel.write(writeBuffer) == 0) {
+                        if (waitCount >= 10) {
+                            throw new TimeoutException("写入超时");
+                        }
+                        Thread.sleep(100);
+                        waitCount++;
+                    } else {
+                        waitCount = 0;
+                    }
+                }
+                writeBuffer.clear();
+            }
+        }
+        this.heartTime = System.currentTimeMillis();
     }
 }
