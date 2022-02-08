@@ -14,32 +14,31 @@ import java.util.Set;
  * @author shouchen
  */
 public class NetCore {
-    private static volatile NetCore netCore;
-    private Selector mainSelector;
+    private static Selector mainSelector;
 
-    public static NetCore getInstance() throws IOException {
-        if (netCore == null) {
-            synchronized (NetCore.class) {
-                if (netCore == null) {
-                    netCore = new NetCore();
-                }
-            }
+    static {
+        try {
+            mainSelector = Selector.open();
+            Thread thread = new Thread(NetCore::mainLoop);
+            thread.setDaemon(true);
+            thread.start();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        return netCore;
-    }
-
-    private NetCore() throws IOException {
-        mainSelector = Selector.open();
-
     }
 
     /**
      * 主轮询
      */
-    private void mainLoop() throws IOException {
+    private static void mainLoop() {
         Set<SelectionKey> selectedKeys = mainSelector.selectedKeys();
         while (true) {
-            mainSelector.select();
+            try {
+                mainSelector.select();
+            } catch (IOException e) {
+                e.printStackTrace();
+                return;
+            }
             Iterator<SelectionKey> keyIterator = selectedKeys.iterator();
             while (keyIterator.hasNext()) {
                 SelectionKey key = keyIterator.next();
@@ -47,13 +46,24 @@ public class NetCore {
                 if (key.isReadable()) {
                     Server server = (Server) key.attachment();
                     key.cancel();
-                    WorkerThreadPool.execute(server::doRead);
+                    WorkerThreadPool.execute(() -> {
+                        try {
+                            server.doRead();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            ServerManager.closeServer(server);
+                        }
+                    });
                 }
             }
         }
     }
 
-    public SelectionKey register(SocketChannel channel, int ops, Server server) throws ClosedChannelException {
+    public static void wakeup() {
+        mainSelector.wakeup();
+    }
+
+    public static SelectionKey register(SocketChannel channel, int ops, Server server) throws ClosedChannelException {
         SelectionKey selectionKey = channel.register(mainSelector, ops, server);
         mainSelector.wakeup();
         return selectionKey;

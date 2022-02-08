@@ -4,6 +4,8 @@ import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.StandardCharsets;
 import java.security.*;
 
 /**
@@ -13,16 +15,16 @@ import java.security.*;
  */
 public final class EncryptUtils {
     private static final int KEY_SIZE = 256;
-    private static String ENCRYPT_ALGORITHM;
-
-    public static void init(String keypairAlgorithm) {
-        ENCRYPT_ALGORITHM = keypairAlgorithm;
-    }
+    private static final String ENCRYPT_ALGORITHM = "AES";
 
     public static SecretKey genAesKey() throws NoSuchAlgorithmException {
         KeyGenerator keyGenerator = KeyGenerator.getInstance(ENCRYPT_ALGORITHM);
         keyGenerator.init(KEY_SIZE, new SecureRandom());
         return keyGenerator.generateKey();
+    }
+
+    public static SecretKey genAesKey(String password) throws NoSuchAlgorithmException {
+        return new SecretKeySpec(MessageDigest.getInstance("SHA-256").digest(password.getBytes(StandardCharsets.UTF_8)), ENCRYPT_ALGORITHM);
     }
 
     public static Cipher getEncryptCipher(SecretKey encryptKey) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException {

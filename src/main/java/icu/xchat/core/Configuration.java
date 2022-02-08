@@ -19,6 +19,10 @@ public class Configuration {
 
     public Configuration() {
         this.configMap = new HashMap<>();
+        this.setDatabaseType(DATABASE_TYPE_DEFAULT)
+                .setDatabaseUsername("")
+                .setDatabasePassword("")
+                .setDatabaseUrl(DATABASE_URL_DEFAULT);
     }
 
     public Configuration setDatabaseType(String type) {

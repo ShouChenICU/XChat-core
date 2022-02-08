@@ -1,6 +1,6 @@
 package icu.xchat.core.net.tasks;
 
-import icu.xchat.server.net.PacketBody;
+import icu.xchat.core.net.PacketBody;
 
 /**
  * 传输任务抽象接口
