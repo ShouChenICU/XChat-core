@@ -5,6 +5,7 @@ import icu.xchat.core.XChatCore;
 import icu.xchat.core.net.PacketBody;
 import icu.xchat.core.net.Server;
 import icu.xchat.core.net.WorkerThreadPool;
+import icu.xchat.core.utils.BsonUtils;
 import icu.xchat.core.utils.EncryptUtils;
 import icu.xchat.core.utils.KeyPairAlgorithms;
 import icu.xchat.core.utils.PayloadTypes;
@@ -22,8 +23,6 @@ import java.security.PublicKey;
  * @author shouchen
  */
 public class LoginTask extends AbstractTask {
-    private final Server server;
-
     public LoginTask(Server server) {
         super(null, null);
         this.server = server;
@@ -84,6 +83,6 @@ public class LoginTask extends AbstractTask {
         return new PacketBody()
                 .setId(this.packetCount++)
                 .setPayloadType(PayloadTypes.LOGIN)
-                .setData(new BasicBSONEncoder().encode(object));
+                .setData(BsonUtils.encode(object));
     }
 }
