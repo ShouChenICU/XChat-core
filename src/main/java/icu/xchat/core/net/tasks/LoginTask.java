@@ -8,23 +8,23 @@ import icu.xchat.core.net.WorkerThreadPool;
 import icu.xchat.core.utils.BsonUtils;
 import icu.xchat.core.utils.EncryptUtils;
 import icu.xchat.core.utils.KeyPairAlgorithms;
-import icu.xchat.core.utils.PayloadTypes;
+import icu.xchat.core.utils.TaskTypes;
 import org.bson.BSONObject;
-import org.bson.BasicBSONEncoder;
 import org.bson.BasicBSONObject;
 
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import java.security.PublicKey;
+import java.util.Objects;
 
 /**
  * 登陆任务
  *
- * @author shouchen
+ * @author shouchenthis
  */
 public class LoginTask extends AbstractTask {
-    public LoginTask(Server server) {
-        super(null, null);
+    public LoginTask(Server server, ProgressCallBack progressCallBack) {
+        super(progressCallBack);
         this.server = server;
         this.packetSum = 5;
     }
@@ -36,6 +36,10 @@ public class LoginTask extends AbstractTask {
      */
     @Override
     public void handlePacket(PacketBody packetBody) throws Exception {
+        if (Objects.equals(packetBody.getTaskType(), TaskTypes.ERROR)) {
+            this.terminate((String) BsonUtils.decode(packetBody.getData()).get("ERR_MSG"));
+            return;
+        }
         byte[] data = packetBody.getData();
         switch (packetBody.getId()) {
             case 0:
@@ -67,6 +71,12 @@ public class LoginTask extends AbstractTask {
     }
 
     @Override
+    public void terminate(String errMsg) {
+        super.terminate(errMsg);
+        server.removeTask(this.taskId);
+    }
+
+    @Override
     public void done() {
         server.removeTask(this.taskId);
     }
@@ -80,9 +90,10 @@ public class LoginTask extends AbstractTask {
     public PacketBody startPacket() {
         BSONObject object = new BasicBSONObject();
         object.put("PROTOCOL_VERSION", GlobalVariables.PROTOCOL_VERSION);
+        this.progressCallBack.updateProgress(getProgress());
         return new PacketBody()
                 .setId(this.packetCount++)
-                .setPayloadType(PayloadTypes.LOGIN)
+                .setTaskType(TaskTypes.LOGIN)
                 .setData(BsonUtils.encode(object));
     }
 }

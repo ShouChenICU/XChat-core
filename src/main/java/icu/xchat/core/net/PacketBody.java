@@ -19,7 +19,7 @@ public class PacketBody implements Serializable {
     /**
      * 负载类型
      */
-    private int payloadType;
+    private int taskType;
     /**
      * 负载数据
      */
@@ -49,12 +49,12 @@ public class PacketBody implements Serializable {
         return this;
     }
 
-    public int getPayloadType() {
-        return payloadType;
+    public int getTaskType() {
+        return taskType;
     }
 
-    public PacketBody setPayloadType(int payloadType) {
-        this.payloadType = payloadType;
+    public PacketBody setTaskType(int taskType) {
+        this.taskType = taskType;
         return this;
     }
 

@@ -5,9 +5,10 @@ import icu.xchat.core.exceptions.PacketException;
 import icu.xchat.core.exceptions.TaskException;
 import icu.xchat.core.net.tasks.CommandTask;
 import icu.xchat.core.net.tasks.LoginTask;
+import icu.xchat.core.net.tasks.ProgressCallBack;
 import icu.xchat.core.net.tasks.Task;
 import icu.xchat.core.utils.PackageUtils;
-import icu.xchat.core.utils.PayloadTypes;
+import icu.xchat.core.utils.TaskTypes;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -36,7 +37,7 @@ public class Server {
     private int packetLength;
     private byte[] packetData;
 
-    public Server(ServerInfo serverInfo) throws IOException, TaskException {
+    public Server(ServerInfo serverInfo, ProgressCallBack progressCallBack) throws IOException, TaskException {
         this.serverInfo = serverInfo;
         this.channel = SocketChannel.open();
         this.channel.socket().connect(new InetSocketAddress(serverInfo.getHost(), serverInfo.getPort()), 1000);
@@ -49,7 +50,7 @@ public class Server {
         this.taskId = 1;
         this.packetStatus = 0;
         this.packetLength = 0;
-        addTask(new LoginTask(this));
+        addTask(new LoginTask(this, progressCallBack));
         this.selectionKey = NetCore.register(channel, SelectionKey.OP_READ, this);
     }
 
@@ -122,12 +123,12 @@ public class Server {
         if (packetBody.getTaskId() != 0) {
             Task task = taskMap.get(packetBody.getTaskId());
             if (task == null) {
-                switch (packetBody.getPayloadType()) {
-                    case PayloadTypes.COMMAND:
+                switch (packetBody.getTaskType()) {
+                    case TaskTypes.COMMAND:
                         task = new CommandTask()
                                 .setTaskId(packetBody.getTaskId());
                         break;
-                    case PayloadTypes.MSG:
+                    case TaskTypes.MSG:
                         // TODO: 2022/2/6
                         break;
                     default:

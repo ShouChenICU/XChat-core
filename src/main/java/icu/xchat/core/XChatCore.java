@@ -1,11 +1,14 @@
 package icu.xchat.core;
 
 import icu.xchat.core.callbacks.OnlineServerListUpdateCallback;
+import icu.xchat.core.database.DaoManager;
+import icu.xchat.core.database.interfaces.UserInfoDao;
 import icu.xchat.core.entities.ServerInfo;
 import icu.xchat.core.exceptions.IdentityLoadException;
 import icu.xchat.core.exceptions.TaskException;
 import icu.xchat.core.net.ServerManager;
 import icu.xchat.core.net.WorkerThreadPool;
+import icu.xchat.core.net.tasks.ProgressCallBack;
 
 import java.io.IOException;
 
@@ -64,10 +67,10 @@ public class XChatCore {
          *
          * @param serverInfo 服务器信息
          */
-        public static void attemptConnectServer(ServerInfo serverInfo) {
+        public static void attemptConnectServer(ServerInfo serverInfo, ProgressCallBack progressCallBack) {
             WorkerThreadPool.execute(() -> {
                 try {
-                    ServerManager.connectServer(serverInfo);
+                    ServerManager.connectServer(serverInfo, progressCallBack);
                 } catch (IOException | TaskException e) {
                     e.printStackTrace();
                 }
@@ -81,6 +84,15 @@ public class XChatCore {
     public static class CallBack {
         public static void setOnlineServerListUpdateCallback(OnlineServerListUpdateCallback callback) {
             ServerManager.setOnlineServerListUpdateCallback(callback);
+        }
+    }
+
+    /**
+     * 数据库相关设置
+     */
+    public static class Database {
+        public static void setUserInfoDao(UserInfoDao userInfoDao) {
+            DaoManager.setUserInfoDao(userInfoDao);
         }
     }
 }

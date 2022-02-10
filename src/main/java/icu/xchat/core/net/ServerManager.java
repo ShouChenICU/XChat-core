@@ -3,6 +3,7 @@ package icu.xchat.core.net;
 import icu.xchat.core.callbacks.OnlineServerListUpdateCallback;
 import icu.xchat.core.entities.ServerInfo;
 import icu.xchat.core.exceptions.TaskException;
+import icu.xchat.core.net.tasks.ProgressCallBack;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -21,7 +22,7 @@ public final class ServerManager {
 
     static {
         onlineServersMap = new HashMap<>();
-        onlineServerListUpdateCallback = (list) -> {
+        onlineServerListUpdateCallback = list -> {
         };
     }
 
@@ -31,12 +32,12 @@ public final class ServerManager {
      * @param serverInfo 服务器信息
      * @throws IOException 连接失败
      */
-    public static void connectServer(ServerInfo serverInfo) throws IOException, TaskException {
+    public static void connectServer(ServerInfo serverInfo, ProgressCallBack progressCallBack) throws IOException, TaskException {
         synchronized (onlineServersMap) {
             if (onlineServersMap.containsKey(serverInfo.getServerCode())) {
                 return;
             }
-            Server server = new Server(serverInfo);
+            Server server = new Server(serverInfo, progressCallBack);
             onlineServersMap.put(serverInfo.getServerCode(), server);
             onlineServerListUpdateCallback.onlineServerListUpdate(getOnlineServersList());
         }
