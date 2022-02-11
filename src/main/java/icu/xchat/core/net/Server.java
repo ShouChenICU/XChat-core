@@ -37,7 +37,7 @@ public class Server {
     private int packetLength;
     private byte[] packetData;
 
-    public Server(ServerInfo serverInfo, ProgressCallBack progressCallBack) throws IOException, TaskException {
+    public Server(ServerInfo serverInfo, ProgressCallBack loginProgressCallBack) throws IOException, TaskException {
         this.serverInfo = serverInfo;
         this.channel = SocketChannel.open();
         this.channel.socket().connect(new InetSocketAddress(serverInfo.getHost(), serverInfo.getPort()), 1000);
@@ -50,7 +50,7 @@ public class Server {
         this.taskId = 1;
         this.packetStatus = 0;
         this.packetLength = 0;
-        addTask(new LoginTask(this, progressCallBack));
+        addTask(new LoginTask(this, loginProgressCallBack));
         this.selectionKey = NetCore.register(channel, SelectionKey.OP_READ, this);
     }
 

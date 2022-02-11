@@ -4,12 +4,10 @@ import icu.xchat.core.callbacks.OnlineServerListUpdateCallback;
 import icu.xchat.core.entities.ServerInfo;
 import icu.xchat.core.exceptions.TaskException;
 import icu.xchat.core.net.tasks.ProgressCallBack;
+import icu.xchat.core.utils.TaskTypes;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * 服务器管理器
@@ -53,6 +51,9 @@ public final class ServerManager {
         }
         server.getSelectionKey().cancel();
         NetCore.wakeup();
+        server.postPacket(new PacketBody()
+                .setTaskId(0)
+                .setTaskType(TaskTypes.LOGOUT));
         try {
             server.getChannel().close();
         } catch (IOException e) {
@@ -77,6 +78,9 @@ public final class ServerManager {
         }
         server.getSelectionKey().cancel();
         NetCore.wakeup();
+        server.postPacket(new PacketBody()
+                .setTaskId(0)
+                .setTaskType(TaskTypes.LOGOUT));
         try {
             server.getChannel().close();
         } catch (IOException e) {
@@ -100,7 +104,23 @@ public final class ServerManager {
     }
 
     public static void closeAll() {
-
+        synchronized (onlineServersMap) {
+            Iterator<Map.Entry<String, Server>> iterator = onlineServersMap.entrySet().iterator();
+            while (iterator.hasNext()) {
+                Server server = iterator.next().getValue();
+                server.getSelectionKey().cancel();
+                NetCore.wakeup();
+                server.postPacket(new PacketBody()
+                        .setTaskId(0)
+                        .setTaskType(TaskTypes.LOGOUT));
+                try {
+                    server.getChannel().close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                iterator.remove();
+            }
+        }
     }
 
     public static void setOnlineServerListUpdateCallback(OnlineServerListUpdateCallback onlineServerListUpdateCallback) {

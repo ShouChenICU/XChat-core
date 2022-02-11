@@ -32,6 +32,7 @@ public class XChatCore {
         }
         assert configuration != null;
         WorkerThreadPool.init(configuration.getWorkerThreadCount());
+        Runtime.getRuntime().addShutdownHook(new Thread(XChatCore::logout));
     }
 
     /**
@@ -72,7 +73,7 @@ public class XChatCore {
                 try {
                     ServerManager.connectServer(serverInfo, progressCallBack);
                 } catch (IOException | TaskException e) {
-                    e.printStackTrace();
+                    progressCallBack.terminate(e.getMessage());
                 }
             });
         }
