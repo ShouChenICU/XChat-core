@@ -64,11 +64,18 @@ public class LoginTask extends AbstractTask {
                  * 生成对称密钥
                  */
                 SecretKey aesKey = EncryptUtils.genAesKey();
+                byte[] iv = EncryptUtils.genIV();
+                server.getPackageUtils().setDecryptIV(iv);
+                BSONObject object = new BasicBSONObject();
+                object.put("KEY", aesKey.getEncoded());
+                object.put("ENCRYPT_IV", iv);
+                iv = EncryptUtils.genIV();
+                object.put("DECRYPT_IV", iv);
                 server.postPacket(new PacketBody()
                         .setId(packetCount)
                         .setTaskId(this.taskId)
-                        .setData(aesKey.getEncoded()));
-                server.getPackageUtils().setEncryptKey(aesKey);
+                        .setData(BsonUtils.encode(object)));
+                server.getPackageUtils().setEncryptKey(aesKey, iv);
                 break;
             case 1:
                 this.packetCount = 2;

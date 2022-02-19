@@ -35,7 +35,7 @@ public final class IdentityUtils {
         KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance(keypairAlgorithm);
         keyPairGenerator.initialize(keySize, new SecureRandom());
         KeyPair keyPair = keyPairGenerator.generateKeyPair();
-        MessageDigest messageDigest = MessageDigest.getInstance("SHA-512");
+        MessageDigest messageDigest = MessageDigest.getInstance("SHA-256");
         byte[] digest = messageDigest.digest(keyPair.getPublic().getEncoded());
         byte[] part = new byte[12];
         System.arraycopy(digest, 0, part, 0, 12);
@@ -55,8 +55,8 @@ public final class IdentityUtils {
      * @return 身份
      */
     @SuppressWarnings("unchecked")
-    public static Identity parseIdentity(byte[] data, String password) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, DataFormatException, InvalidKeySpecException {
-        Cipher cipher = EncryptUtils.getDecryptCipher(EncryptUtils.genAesKey(password));
+    public static Identity parseIdentity(byte[] data, String password) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, DataFormatException, InvalidKeySpecException, InvalidAlgorithmParameterException {
+        Cipher cipher = EncryptUtils.getDecryptCipher(EncryptUtils.genAesKey(password), EncryptUtils.genIV(password));
         data = cipher.doFinal(data);
         data = CompressionUtils.deCompress(data);
         BSONObject object = new BasicBSONDecoder().readObject(data);
@@ -79,7 +79,7 @@ public final class IdentityUtils {
      * @param password 密码
      * @return 身份
      */
-    public static Identity parseIdentity(File file, String password) throws IOException, DataFormatException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeySpecException, InvalidKeyException {
+    public static Identity parseIdentity(File file, String password) throws IOException, DataFormatException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeySpecException, InvalidKeyException, InvalidAlgorithmParameterException {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         try (FileInputStream inputStream = new FileInputStream(file)) {
             int len;
@@ -98,7 +98,7 @@ public final class IdentityUtils {
      * @param password 密码
      * @return 字节数组
      */
-    public static byte[] encodeIdentity(Identity identity, String password) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+    public static byte[] encodeIdentity(Identity identity, String password) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException {
         BSONObject object = new BasicBSONObject();
         object.put("UID_CODE", identity.getUidCode());
         object.put("PUBLIC_KEY", identity.getPublicKey().getEncoded());
@@ -108,7 +108,7 @@ public final class IdentityUtils {
         object.put("SIGNATURE", identity.getSignature());
         byte[] dat = new BasicBSONEncoder().encode(object);
         dat = CompressionUtils.compress(dat);
-        Cipher cipher = EncryptUtils.getEncryptCipher(EncryptUtils.genAesKey(password));
+        Cipher cipher = EncryptUtils.getEncryptCipher(EncryptUtils.genAesKey(password), EncryptUtils.genIV(password));
         return cipher.doFinal(dat);
     }
 
@@ -119,7 +119,7 @@ public final class IdentityUtils {
      * @param password  密码
      * @param storeFile 存储文件
      */
-    public static void storeIdentity(Identity identity, String password, File storeFile) throws NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException, IOException {
+    public static void storeIdentity(Identity identity, String password, File storeFile) throws NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException, IOException, InvalidAlgorithmParameterException {
         byte[] dat = encodeIdentity(identity, password);
         try (FileOutputStream outputStream = new FileOutputStream(storeFile)) {
             outputStream.write(dat);

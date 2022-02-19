@@ -45,15 +45,22 @@ public final class ServerManager {
         if (server == null) {
             return;
         }
+        boolean isOnline = true;
         synchronized (onlineServersMap) {
-            onlineServersMap.remove(server.getServerInfo().getServerCode());
-            onlineServerListUpdateCallback.onlineServerListUpdate(getOnlineServersList());
+            if (onlineServersMap.containsKey(server.getServerInfo().getServerCode())) {
+                onlineServersMap.remove(server.getServerInfo().getServerCode());
+                onlineServerListUpdateCallback.onlineServerListUpdate(getOnlineServersList());
+            } else {
+                isOnline = false;
+            }
         }
         server.getSelectionKey().cancel();
         NetCore.wakeup();
-        server.postPacket(new PacketBody()
-                .setTaskId(0)
-                .setTaskType(TaskTypes.LOGOUT));
+        if (isOnline) {
+            server.postPacket(new PacketBody()
+                    .setTaskId(0)
+                    .setTaskType(TaskTypes.LOGOUT));
+        }
         try {
             server.getChannel().close();
         } catch (IOException e) {
