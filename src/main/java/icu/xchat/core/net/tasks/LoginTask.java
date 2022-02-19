@@ -2,9 +2,9 @@ package icu.xchat.core.net.tasks;
 
 import icu.xchat.core.GlobalVariables;
 import icu.xchat.core.XChatCore;
+import icu.xchat.core.callbacks.interfaces.ProgressCallBack;
 import icu.xchat.core.net.PacketBody;
 import icu.xchat.core.net.Server;
-import icu.xchat.core.net.ServerManager;
 import icu.xchat.core.net.WorkerThreadPool;
 import icu.xchat.core.utils.BsonUtils;
 import icu.xchat.core.utils.EncryptUtils;
@@ -63,19 +63,18 @@ public class LoginTask extends AbstractTask {
                 /*
                  * 生成对称密钥
                  */
-                SecretKey aesKey = EncryptUtils.genAesKey();
-                byte[] iv = EncryptUtils.genIV();
-                server.getPackageUtils().setDecryptIV(iv);
                 BSONObject object = new BasicBSONObject();
+                SecretKey aesKey = EncryptUtils.genAesKey();
                 object.put("KEY", aesKey.getEncoded());
-                object.put("ENCRYPT_IV", iv);
-                iv = EncryptUtils.genIV();
-                object.put("DECRYPT_IV", iv);
+                byte[] decryptIV = EncryptUtils.genIV();
+                object.put("ENCRYPT_IV", decryptIV);
+                byte[] encryptIV = EncryptUtils.genIV();
+                object.put("DECRYPT_IV", encryptIV);
                 server.postPacket(new PacketBody()
                         .setId(packetCount)
                         .setTaskId(this.taskId)
                         .setData(BsonUtils.encode(object)));
-                server.getPackageUtils().setEncryptKey(aesKey, iv);
+                server.getPackageUtils().initCrypto(aesKey, encryptIV, decryptIV);
                 break;
             case 1:
                 this.packetCount = 2;

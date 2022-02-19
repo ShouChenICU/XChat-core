@@ -1,6 +1,6 @@
 package icu.xchat.core;
 
-import icu.xchat.core.callbacks.OnlineServerListUpdateCallback;
+import icu.xchat.core.callbacks.interfaces.OnlineServerListUpdateCallback;
 import icu.xchat.core.database.DaoManager;
 import icu.xchat.core.database.interfaces.UserInfoDao;
 import icu.xchat.core.entities.ServerInfo;
@@ -8,7 +8,7 @@ import icu.xchat.core.exceptions.IdentityLoadException;
 import icu.xchat.core.exceptions.TaskException;
 import icu.xchat.core.net.ServerManager;
 import icu.xchat.core.net.WorkerThreadPool;
-import icu.xchat.core.net.tasks.ProgressCallBack;
+import icu.xchat.core.callbacks.interfaces.ProgressCallBack;
 
 import java.io.IOException;
 

@@ -1,5 +1,7 @@
 package icu.xchat.core.net.tasks;
 
+import icu.xchat.core.callbacks.adapters.ProgressAdapter;
+import icu.xchat.core.callbacks.interfaces.ProgressCallBack;
 import icu.xchat.core.net.Server;
 
 /**
@@ -8,23 +10,7 @@ import icu.xchat.core.net.Server;
  * @author shouchen
  */
 public abstract class AbstractTask implements Task {
-    public static final ProgressCallBack EMPTY_PROGRESS_CALLBACK = new ProgressCallBack() {
-        @Override
-        public void startProgress() {
-        }
-
-        @Override
-        public void updateProgress(double progress) {
-        }
-
-        @Override
-        public void completeProgress() {
-        }
-
-        @Override
-        public void terminate(String errMsg) {
-        }
-    };
+    public static final ProgressCallBack EMPTY_PROGRESS_CALLBACK = new ProgressAdapter();
     protected Server server;
     protected int taskId;
     protected int packetCount;

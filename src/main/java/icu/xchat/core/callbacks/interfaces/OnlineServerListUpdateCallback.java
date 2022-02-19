@@ -1,4 +1,4 @@
-package icu.xchat.core.callbacks;
+package icu.xchat.core.callbacks.interfaces;
 
 import icu.xchat.core.entities.ServerInfo;
 

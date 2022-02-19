@@ -5,7 +5,7 @@ import icu.xchat.core.exceptions.PacketException;
 import icu.xchat.core.exceptions.TaskException;
 import icu.xchat.core.net.tasks.CommandTask;
 import icu.xchat.core.net.tasks.LoginTask;
-import icu.xchat.core.net.tasks.ProgressCallBack;
+import icu.xchat.core.callbacks.interfaces.ProgressCallBack;
 import icu.xchat.core.net.tasks.Task;
 import icu.xchat.core.utils.PackageUtils;
 import icu.xchat.core.utils.TaskTypes;

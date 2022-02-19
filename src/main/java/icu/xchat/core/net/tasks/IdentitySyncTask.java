@@ -2,6 +2,7 @@ package icu.xchat.core.net.tasks;
 
 import icu.xchat.core.Identity;
 import icu.xchat.core.XChatCore;
+import icu.xchat.core.callbacks.interfaces.ProgressCallBack;
 import icu.xchat.core.net.PacketBody;
 import icu.xchat.core.net.Server;
 import icu.xchat.core.net.WorkerThreadPool;

@@ -1,7 +1,7 @@
-package icu.xchat.core.net.tasks;
+package icu.xchat.core.callbacks.interfaces;
 
 /**
- * 进度更新回调
+ * 任务进度更新回调
  *
  * @author shouchen
  */
