@@ -21,10 +21,20 @@ public class XChatCore {
     private static Configuration configuration;
     private static Identity identity;
 
+    /**
+     * 获取当前配置
+     *
+     * @return 配置对象
+     */
     public static Configuration getConfiguration() {
         return configuration;
     }
 
+    /**
+     * 初始化
+     *
+     * @param configuration 配置对象
+     */
     public static void init(Configuration configuration) {
         XChatCore.configuration = configuration;
         if (XChatCore.configuration == null) {
@@ -48,10 +58,18 @@ public class XChatCore {
         }
     }
 
+    /**
+     * 获取当前身份
+     *
+     * @return 身份
+     */
     public static Identity getIdentity() {
         return identity;
     }
 
+    /**
+     * 注销登陆
+     */
     public static synchronized void logout() {
         if (XChatCore.identity != null) {
             ServerManager.closeAll();
@@ -92,6 +110,9 @@ public class XChatCore {
      * 数据库相关设置
      */
     public static class Database {
+        /**
+         * 设置用户信息数据访问对象
+         */
         public static void setUserInfoDao(UserInfoDao userInfoDao) {
             DaoManager.setUserInfoDao(userInfoDao);
         }

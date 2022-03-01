@@ -33,6 +33,7 @@ public final class ServerManager {
     public static void connectServer(ServerInfo serverInfo, ProgressCallBack progressCallBack) throws IOException, TaskException {
         synchronized (onlineServersMap) {
             if (onlineServersMap.containsKey(serverInfo.getServerCode())) {
+                progressCallBack.terminate("不可重复连接服务器！");
                 return;
             }
             Server server = new Server(serverInfo, progressCallBack);

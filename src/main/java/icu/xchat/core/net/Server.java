@@ -37,13 +37,19 @@ public class Server {
     private int packetLength;
     private byte[] packetData;
 
+    /**
+     * 初始化
+     *
+     * @param serverInfo            服务器信息实体对象
+     * @param loginProgressCallBack 连接进度回调
+     */
     public Server(ServerInfo serverInfo, ProgressCallBack loginProgressCallBack) throws IOException, TaskException {
         this.serverInfo = serverInfo;
         this.channel = SocketChannel.open();
         this.channel.socket().connect(new InetSocketAddress(serverInfo.getHost(), serverInfo.getPort()), 1000);
         this.channel.configureBlocking(false);
-        this.readBuffer = ByteBuffer.allocateDirect(256);
-        this.writeBuffer = ByteBuffer.allocateDirect(256);
+        this.readBuffer = ByteBuffer.allocateDirect(512);
+        this.writeBuffer = ByteBuffer.allocateDirect(512);
         this.taskMap = new ConcurrentHashMap<>();
         this.packageUtils = new PackageUtils();
         this.heartTime = System.currentTimeMillis();
