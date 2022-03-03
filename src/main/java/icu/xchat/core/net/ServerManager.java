@@ -1,13 +1,15 @@
 package icu.xchat.core.net;
 
 import icu.xchat.core.callbacks.interfaces.OnlineServerListUpdateCallback;
+import icu.xchat.core.callbacks.interfaces.ProgressCallBack;
 import icu.xchat.core.entities.ServerInfo;
 import icu.xchat.core.exceptions.TaskException;
-import icu.xchat.core.callbacks.interfaces.ProgressCallBack;
 import icu.xchat.core.utils.TaskTypes;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 服务器管理器
@@ -15,10 +17,16 @@ import java.util.*;
  * @author shouchen
  */
 public final class ServerManager {
+    private static final ScheduledThreadPoolExecutor TIMER_EXECUTOR;
     private static final Map<String, Server> onlineServersMap;
     private static OnlineServerListUpdateCallback onlineServerListUpdateCallback;
 
     static {
+        TIMER_EXECUTOR = new ScheduledThreadPoolExecutor(1, r -> {
+            Thread thread = new Thread(r);
+            thread.setDaemon(true);
+            return thread;
+        });
         onlineServersMap = new HashMap<>();
         onlineServerListUpdateCallback = list -> {
         };
@@ -38,7 +46,22 @@ public final class ServerManager {
             }
             Server server = new Server(serverInfo, progressCallBack);
             onlineServersMap.put(serverInfo.getServerCode(), server);
+            heartTest(server);
             onlineServerListUpdateCallback.onlineServerListUpdate(getOnlineServersList());
+        }
+    }
+
+    /**
+     * 心跳检测
+     *
+     * @param server 服务端实体
+     */
+    private static void heartTest(Server server) {
+        if (server.getChannel().isConnected()) {
+            if (System.currentTimeMillis() - server.getHeartTime() > 10000) {
+                WorkerThreadPool.execute(() -> server.postPacket(new PacketBody().setTaskType(TaskTypes.HEART)));
+            }
+            TIMER_EXECUTOR.schedule(() -> heartTest(server), 10, TimeUnit.SECONDS);
         }
     }
 

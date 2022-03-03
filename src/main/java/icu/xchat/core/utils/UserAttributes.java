@@ -1,11 +1,11 @@
 package icu.xchat.core.utils;
 
 /**
- * 可用属性集
+ * 用户可用属性集
  *
  * @author shouchen
  */
-public class Attributes {
+public class UserAttributes {
     /**
      * 昵称
      */

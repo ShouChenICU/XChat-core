@@ -1,11 +1,11 @@
 package icu.xchat.core.net;
 
+import icu.xchat.core.callbacks.interfaces.ProgressCallBack;
 import icu.xchat.core.entities.ServerInfo;
 import icu.xchat.core.exceptions.PacketException;
 import icu.xchat.core.exceptions.TaskException;
 import icu.xchat.core.net.tasks.CommandTask;
 import icu.xchat.core.net.tasks.LoginTask;
-import icu.xchat.core.callbacks.interfaces.ProgressCallBack;
 import icu.xchat.core.net.tasks.Task;
 import icu.xchat.core.utils.PackageUtils;
 import icu.xchat.core.utils.TaskTypes;
@@ -15,6 +15,7 @@ import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeoutException;
 
@@ -126,6 +127,7 @@ public class Server {
      * @param packetBody 包
      */
     private void handlePacket(PacketBody packetBody) throws Exception {
+        this.heartTime = System.currentTimeMillis();
         if (packetBody.getTaskId() != 0) {
             Task task = taskMap.get(packetBody.getTaskId());
             if (task == null) {
@@ -188,7 +190,7 @@ public class Server {
                 byte[] dat = packageUtils.encodePacket(packetBody);
                 int length = dat.length;
                 if (length > 65535) {
-                    throw new PacketException("包长度错误 " + length);
+                    throw new PacketException("包长度超限: " + length);
                 }
                 writeBuffer.put((byte) (length % 256))
                         .put((byte) (length / 256));
@@ -220,5 +222,26 @@ public class Server {
             e.printStackTrace();
             ServerManager.closeServer(this);
         }
+    }
+
+    public long getHeartTime() {
+        return heartTime;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        Server server = (Server) o;
+        return Objects.equals(channel, server.channel);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(channel);
     }
 }
