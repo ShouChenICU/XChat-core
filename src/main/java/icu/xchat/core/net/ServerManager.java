@@ -65,6 +65,11 @@ public final class ServerManager {
         }
     }
 
+    /**
+     * 关闭一个服务器
+     *
+     * @param server 服务器实体
+     */
     public static void closeServer(Server server) {
         if (server == null) {
             return;
@@ -97,14 +102,14 @@ public final class ServerManager {
      *
      * @param serverCode 服务器标识码
      */
-    public static void closeServer(String serverCode) {
+    public static boolean closeServer(String serverCode) {
         Server server;
         synchronized (onlineServersMap) {
             if (onlineServersMap.containsKey(serverCode)) {
                 server = onlineServersMap.remove(serverCode);
                 onlineServerListUpdateCallback.onlineServerListUpdate(getOnlineServersList());
             } else {
-                return;
+                return false;
             }
         }
         server.getSelectionKey().cancel();
@@ -117,6 +122,7 @@ public final class ServerManager {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        return true;
     }
 
     /**
@@ -132,6 +138,16 @@ public final class ServerManager {
             }
         }
         return serverInfoList;
+    }
+
+    /**
+     * 获取服务器实体
+     *
+     * @param serverCode 服务器标识码
+     * @return 服务器实体
+     */
+    public static Server getServerByServerCode(String serverCode) {
+        return onlineServersMap.get(serverCode);
     }
 
     public static void closeAll() {

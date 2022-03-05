@@ -1,6 +1,7 @@
 package icu.xchat.core;
 
 import icu.xchat.core.callbacks.interfaces.OnlineServerListUpdateCallback;
+import icu.xchat.core.callbacks.interfaces.ProgressCallBack;
 import icu.xchat.core.database.DaoManager;
 import icu.xchat.core.database.interfaces.UserInfoDao;
 import icu.xchat.core.entities.ServerInfo;
@@ -8,15 +9,17 @@ import icu.xchat.core.exceptions.IdentityLoadException;
 import icu.xchat.core.exceptions.TaskException;
 import icu.xchat.core.net.ServerManager;
 import icu.xchat.core.net.WorkerThreadPool;
-import icu.xchat.core.callbacks.interfaces.ProgressCallBack;
+import icu.xchat.core.net.tasks.IdentitySyncTask;
 
 import java.io.IOException;
+import java.util.List;
 
 /**
  * XChat客户端核心
  *
  * @author shouchen
  */
+@SuppressWarnings("unused")
 public class XChatCore {
     private static Configuration configuration;
     private static Identity identity;
@@ -94,6 +97,46 @@ public class XChatCore {
                     progressCallBack.terminate(e.getMessage());
                 }
             });
+        }
+
+        /**
+         * 断开一个服务器连接
+         *
+         * @param serverCode       服务器标识码
+         * @param progressCallBack 进度回调
+         */
+        public static void disConnectServer(String serverCode, ProgressCallBack progressCallBack) {
+            progressCallBack.startProgress();
+            if (ServerManager.closeServer(serverCode)) {
+                progressCallBack.completeProgress();
+            } else {
+                progressCallBack.terminate("找不到该服务器！");
+            }
+        }
+
+        /**
+         * 同步身份
+         *
+         * @param serverCode       服务器标识码
+         * @param progressCallBack 进度回调
+         */
+        public static void syncIdentity(String serverCode, ProgressCallBack progressCallBack) {
+            try {
+                ServerManager.getServerByServerCode(serverCode).addTask(
+                        new IdentitySyncTask(progressCallBack)
+                );
+            } catch (TaskException e) {
+                progressCallBack.terminate(e.getMessage());
+            }
+        }
+
+        /**
+         * 获取在线服务器信息列表
+         *
+         * @return 在线服务器信息列表
+         */
+        public static List<ServerInfo> getOnlineServersList() {
+            return ServerManager.getOnlineServersList();
         }
     }
 

@@ -4,7 +4,6 @@ import icu.xchat.core.Identity;
 import icu.xchat.core.XChatCore;
 import icu.xchat.core.callbacks.interfaces.ProgressCallBack;
 import icu.xchat.core.net.PacketBody;
-import icu.xchat.core.net.Server;
 import icu.xchat.core.net.WorkerThreadPool;
 import icu.xchat.core.utils.BsonUtils;
 import icu.xchat.core.utils.TaskTypes;
@@ -24,9 +23,8 @@ public class IdentitySyncTask extends AbstractTask {
     private byte[] identityData;
     private int processedSize;
 
-    public IdentitySyncTask(Server server, ProgressCallBack progressCallBack) {
+    public IdentitySyncTask(ProgressCallBack progressCallBack) {
         super(progressCallBack);
-        this.server = server;
     }
 
     /**
@@ -43,7 +41,7 @@ public class IdentitySyncTask extends AbstractTask {
         if (packetBody.getId() == 0) {
             if (packetBody.getData()[0] == 1) {
                 /*
-                 * 服务器 -> 用户
+                 * 用户 -> 服务器
                  */
                 isUpload = true;
                 this.identityData = encodeIdentity(XChatCore.getIdentity());
@@ -57,7 +55,7 @@ public class IdentitySyncTask extends AbstractTask {
                 upload();
             } else if (packetBody.getData()[0] == 0) {
                 /*
-                 * 用户 -> 服务器
+                 * 服务器 -> 用户
                  */
                 isUpload = false;
                 this.processedSize = 0;
@@ -125,9 +123,10 @@ public class IdentitySyncTask extends AbstractTask {
         this.progressCallBack.updateProgress(0);
         BSONObject object = new BasicBSONObject();
         object.put("TIMESTAMP", XChatCore.getIdentity().getTimeStamp());
-        object.put("PUBLIC_KEY", XChatCore.getIdentity().getPublicKey());
+        object.put("PUBLIC_KEY", XChatCore.getIdentity().getPublicKey().getEncoded());
         return new PacketBody()
                 .setId(this.packetCount = 0)
+                .setTaskType(TaskTypes.IDENTITY_SYNC)
                 .setData(BsonUtils.encode(object));
     }
 
@@ -145,7 +144,7 @@ public class IdentitySyncTask extends AbstractTask {
         server.removeTask(this.taskId);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"all"})
     @Override
     public void done() {
         if (!isUpload) {
@@ -156,7 +155,12 @@ public class IdentitySyncTask extends AbstractTask {
                     .setSignature((String) object.get("SIGNATURE"))
                     .setPublicKey(XChatCore.getIdentity().getPublicKey());
             if (tempIdentity.checkSignature()) {
-                // TODO: 2022/2/11  
+                Identity identity = XChatCore.getIdentity();
+                synchronized (identity) {
+                    identity.setAttributes(tempIdentity.getAttributes())
+                            .setTimeStamp(tempIdentity.getTimeStamp())
+                            .setSignature(tempIdentity.getSignature());
+                }
             } else {
                 this.progressCallBack.terminate("身份签名认证失败");
             }

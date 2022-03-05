@@ -7,6 +7,7 @@ import java.util.Map;
  *
  * @author shouchen
  */
+@SuppressWarnings("unused")
 public class UserInfo {
     /**
      * 用户唯一识别码

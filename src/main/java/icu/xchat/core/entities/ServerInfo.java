@@ -8,9 +8,21 @@ import java.util.Objects;
  * @author shouchen
  */
 public class ServerInfo {
+    /**
+     * 服务器标识码
+     */
     private String serverCode;
+    /**
+     * 密钥交换算法
+     */
     private String akeAlgorithm;
+    /**
+     * 服务器地址
+     */
     private String host;
+    /**
+     * 服务器端口
+     */
     private Integer port;
 
     public String getServerCode() {

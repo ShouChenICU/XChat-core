@@ -35,11 +35,7 @@ public final class IdentityUtils {
         KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance(keypairAlgorithm);
         keyPairGenerator.initialize(keySize, new SecureRandom());
         KeyPair keyPair = keyPairGenerator.generateKeyPair();
-        MessageDigest messageDigest = MessageDigest.getInstance("SHA-256");
-        byte[] digest = messageDigest.digest(keyPair.getPublic().getEncoded());
-        byte[] part = new byte[12];
-        System.arraycopy(digest, 0, part, 0, 12);
-        String uidCode = Base64.getEncoder().encodeToString(part);
+        String uidCode = getUidCodeByPublicKeyCode(keyPair.getPublic().getEncoded());
         return new Identity()
                 .setUidCode(uidCode)
                 .setPublicKey(keyPair.getPublic())
@@ -125,5 +121,20 @@ public final class IdentityUtils {
             outputStream.write(dat);
             outputStream.flush();
         }
+    }
+
+    /**
+     * 从公钥计算用户标识码
+     *
+     * @param publicKeyCode 公钥
+     * @return 用户标识码
+     */
+    public static String getUidCodeByPublicKeyCode(byte[] publicKeyCode) throws NoSuchAlgorithmException {
+        byte[] digestCode;
+        MessageDigest messageDigest = MessageDigest.getInstance("SHA-256");
+        digestCode = messageDigest.digest(publicKeyCode);
+        byte[] buf = new byte[12];
+        System.arraycopy(digestCode, 0, buf, 0, buf.length);
+        return Base64.getEncoder().encodeToString(buf);
     }
 }

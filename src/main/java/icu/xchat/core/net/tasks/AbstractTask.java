@@ -27,6 +27,15 @@ public abstract class AbstractTask implements Task {
         progressCallBack.startProgress();
     }
 
+    public Server getServer() {
+        return server;
+    }
+
+    public AbstractTask setServer(Server server) {
+        this.server = server;
+        return this;
+    }
+
     @Override
     public int getTaskId() {
         return taskId;

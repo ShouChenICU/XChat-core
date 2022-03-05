@@ -4,6 +4,7 @@ import icu.xchat.core.callbacks.interfaces.ProgressCallBack;
 import icu.xchat.core.entities.ServerInfo;
 import icu.xchat.core.exceptions.PacketException;
 import icu.xchat.core.exceptions.TaskException;
+import icu.xchat.core.net.tasks.AbstractTask;
 import icu.xchat.core.net.tasks.CommandTask;
 import icu.xchat.core.net.tasks.LoginTask;
 import icu.xchat.core.net.tasks.Task;
@@ -57,7 +58,7 @@ public class Server {
         this.taskId = 1;
         this.packetStatus = 0;
         this.packetLength = 0;
-        addTask(new LoginTask(this, loginProgressCallBack));
+        addTask(new LoginTask(loginProgressCallBack));
         this.selectionKey = NetCore.register(channel, SelectionKey.OP_READ, this);
     }
 
@@ -156,6 +157,7 @@ public class Server {
      * @param task 任务
      */
     public void addTask(Task task) throws TaskException {
+        ((AbstractTask) task).setServer(this);
         PacketBody packetBody = task.startPacket();
         if (packetBody == null) {
             throw new TaskException("起步包为空");

@@ -4,7 +4,6 @@ import icu.xchat.core.GlobalVariables;
 import icu.xchat.core.XChatCore;
 import icu.xchat.core.callbacks.interfaces.ProgressCallBack;
 import icu.xchat.core.net.PacketBody;
-import icu.xchat.core.net.Server;
 import icu.xchat.core.net.WorkerThreadPool;
 import icu.xchat.core.utils.BsonUtils;
 import icu.xchat.core.utils.EncryptUtils;
@@ -27,9 +26,8 @@ import java.util.Objects;
  * @author shouchenthis
  */
 public class LoginTask extends AbstractTask {
-    public LoginTask(Server server, ProgressCallBack progressCallBack) {
+    public LoginTask(ProgressCallBack progressCallBack) {
         super(progressCallBack);
-        this.server = server;
     }
 
     /**
