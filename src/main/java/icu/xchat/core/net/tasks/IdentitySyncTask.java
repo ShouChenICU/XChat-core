@@ -10,6 +10,7 @@ import icu.xchat.core.utils.TaskTypes;
 import org.bson.BSONObject;
 import org.bson.BasicBSONObject;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Objects;
 
@@ -35,7 +36,7 @@ public class IdentitySyncTask extends AbstractTask {
     @Override
     public void handlePacket(PacketBody packetBody) {
         if (Objects.equals(packetBody.getTaskType(), TaskTypes.ERROR)) {
-            terminate((String) BsonUtils.decode(packetBody.getData()).get("ERR_MSG"));
+            terminate(new String(packetBody.getData(), StandardCharsets.UTF_8));
             return;
         }
         if (packetBody.getId() == 0) {

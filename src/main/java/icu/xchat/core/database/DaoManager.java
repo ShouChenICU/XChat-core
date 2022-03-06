@@ -7,14 +7,30 @@ import icu.xchat.core.database.interfaces.UserInfoDao;
  *
  * @author shouchen
  */
+@SuppressWarnings("unused")
 public class DaoManager {
-    private static UserInfoDao userInfoDao;
+    private static volatile DaoManager daoManager;
+    private UserInfoDao userInfoDao;
 
-    public static void setUserInfoDao(UserInfoDao userInfoDao) {
-        DaoManager.userInfoDao = userInfoDao;
+    public static DaoManager getInstance() {
+        if (daoManager == null) {
+            synchronized (DaoManager.class) {
+                if (daoManager == null) {
+                    daoManager = new DaoManager();
+                }
+            }
+        }
+        return daoManager;
     }
 
-    public static UserInfoDao getUserInfoDao() {
+    private DaoManager() {
+    }
+
+    public void setUserInfoDao(UserInfoDao userInfoDao) {
+        this.userInfoDao = userInfoDao;
+    }
+
+    public UserInfoDao getUserInfoDao() {
         return userInfoDao;
     }
 }

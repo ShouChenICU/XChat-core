@@ -3,7 +3,6 @@ package icu.xchat.core;
 import icu.xchat.core.callbacks.interfaces.OnlineServerListUpdateCallback;
 import icu.xchat.core.callbacks.interfaces.ProgressCallBack;
 import icu.xchat.core.database.DaoManager;
-import icu.xchat.core.database.interfaces.UserInfoDao;
 import icu.xchat.core.entities.ServerInfo;
 import icu.xchat.core.exceptions.IdentityLoadException;
 import icu.xchat.core.exceptions.TaskException;
@@ -83,7 +82,7 @@ public class XChatCore {
     /**
      * 服务器相关方法
      */
-    public static class Server {
+    public static final class Server {
         /**
          * 尝试连接一个服务器
          *
@@ -143,7 +142,7 @@ public class XChatCore {
     /**
      * 回调方法设置
      */
-    public static class CallBack {
+    public static final class CallBack {
         public static void setOnlineServerListUpdateCallback(OnlineServerListUpdateCallback callback) {
             ServerManager.setOnlineServerListUpdateCallback(callback);
         }
@@ -152,12 +151,5 @@ public class XChatCore {
     /**
      * 数据库相关设置
      */
-    public static class Database {
-        /**
-         * 设置用户信息数据访问对象
-         */
-        public static void setUserInfoDao(UserInfoDao userInfoDao) {
-            DaoManager.setUserInfoDao(userInfoDao);
-        }
-    }
+    public static final DaoManager DAO_MANAGER = DaoManager.getInstance();
 }

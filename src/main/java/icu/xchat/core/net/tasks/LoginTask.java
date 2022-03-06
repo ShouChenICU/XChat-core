@@ -15,6 +15,7 @@ import org.bson.BasicBSONObject;
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import javax.security.auth.login.LoginException;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.PublicKey;
 import java.util.Base64;
@@ -38,7 +39,7 @@ public class LoginTask extends AbstractTask {
     @Override
     public void handlePacket(PacketBody packetBody) throws Exception {
         if (Objects.equals(packetBody.getTaskType(), TaskTypes.ERROR)) {
-            this.terminate((String) BsonUtils.decode(packetBody.getData()).get("ERR_MSG"));
+            this.terminate(new String(packetBody.getData(), StandardCharsets.UTF_8));
             return;
         }
         byte[] data = packetBody.getData();
