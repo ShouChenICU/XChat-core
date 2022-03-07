@@ -1,13 +1,13 @@
 package icu.xchat.core.net;
 
 import icu.xchat.core.callbacks.interfaces.ProgressCallBack;
+import icu.xchat.core.constants.TaskTypes;
 import icu.xchat.core.entities.ServerInfo;
 import icu.xchat.core.exceptions.TaskException;
 import icu.xchat.core.net.tasks.AbstractTask;
 import icu.xchat.core.net.tasks.CommandTask;
 import icu.xchat.core.net.tasks.LoginTask;
 import icu.xchat.core.net.tasks.Task;
-import icu.xchat.core.constants.TaskTypes;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -118,5 +118,13 @@ public class Server extends NetNode {
      */
     public void removeTask(int taskId) {
         this.taskMap.remove(taskId);
+    }
+
+    @Override
+    public void close() throws IOException {
+        super.close();
+        for (Task task : taskMap.values()) {
+            task.terminate("Closed!");
+        }
     }
 }

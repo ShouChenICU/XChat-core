@@ -83,17 +83,17 @@ public final class ServerManager {
                 isOnline = false;
             }
         }
-        server.getSelectionKey().cancel();
-        NetCore.wakeup();
         if (isOnline) {
             server.postPacket(new PacketBody()
                     .setTaskId(0)
                     .setTaskType(TaskTypes.LOGOUT));
         }
         try {
-            server.getChannel().close();
+            server.close();
         } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+            NetCore.wakeup();
         }
     }
 
