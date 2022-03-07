@@ -1,4 +1,4 @@
-package icu.xchat.core.utils;
+package icu.xchat.core.constants;
 
 /**
  * 任务类型

@@ -1,4 +1,4 @@
-package icu.xchat.core.utils;
+package icu.xchat.core.constants;
 
 /**
  * 房间成员角色

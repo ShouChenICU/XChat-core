@@ -1,7 +1,7 @@
 package icu.xchat.core.net.tasks;
 
 import icu.xchat.core.net.PacketBody;
-import icu.xchat.core.utils.TaskTypes;
+import icu.xchat.core.constants.TaskTypes;
 
 /**
  * 房间信息同步任务

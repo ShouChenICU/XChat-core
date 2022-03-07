@@ -7,7 +7,7 @@ import icu.xchat.core.net.tasks.AbstractTask;
 import icu.xchat.core.net.tasks.CommandTask;
 import icu.xchat.core.net.tasks.LoginTask;
 import icu.xchat.core.net.tasks.Task;
-import icu.xchat.core.utils.TaskTypes;
+import icu.xchat.core.constants.TaskTypes;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;

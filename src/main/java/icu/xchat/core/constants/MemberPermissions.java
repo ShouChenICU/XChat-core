@@ -1,4 +1,4 @@
-package icu.xchat.core.utils;
+package icu.xchat.core.constants;
 
 /**
  * 房间成员权限
@@ -19,4 +19,8 @@ public class MemberPermissions {
      * 下载文件权限
      */
     public static final int PERMISSION_FILE_DOWNLOAD = 4;
+    /**
+     * 全部权限
+     */
+    public static final int ALL = 7;
 }

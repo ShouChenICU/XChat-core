@@ -6,7 +6,7 @@ import icu.xchat.core.callbacks.interfaces.ProgressCallBack;
 import icu.xchat.core.net.PacketBody;
 import icu.xchat.core.net.WorkerThreadPool;
 import icu.xchat.core.utils.BsonUtils;
-import icu.xchat.core.utils.TaskTypes;
+import icu.xchat.core.constants.TaskTypes;
 import org.bson.BSONObject;
 import org.bson.BasicBSONObject;
 

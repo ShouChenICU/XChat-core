@@ -4,7 +4,7 @@ import icu.xchat.core.callbacks.interfaces.OnlineServerListUpdateCallback;
 import icu.xchat.core.callbacks.interfaces.ProgressCallBack;
 import icu.xchat.core.entities.ServerInfo;
 import icu.xchat.core.exceptions.TaskException;
-import icu.xchat.core.utils.TaskTypes;
+import icu.xchat.core.constants.TaskTypes;
 
 import java.io.IOException;
 import java.util.*;

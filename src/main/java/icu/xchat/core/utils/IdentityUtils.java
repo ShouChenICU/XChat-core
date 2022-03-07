@@ -1,6 +1,7 @@
 package icu.xchat.core.utils;
 
 import icu.xchat.core.Identity;
+import icu.xchat.core.constants.KeyPairAlgorithms;
 import org.bson.BSONObject;
 import org.bson.BasicBSONDecoder;
 import org.bson.BasicBSONEncoder;

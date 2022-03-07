@@ -1,8 +1,11 @@
 package icu.xchat.core.entities;
 
 
-import icu.xchat.core.utils.MemberPermissions;
-import icu.xchat.core.utils.MemberRoles;
+import icu.xchat.core.constants.MemberPermissions;
+import icu.xchat.core.constants.MemberRoles;
+import icu.xchat.core.utils.BsonUtils;
+import org.bson.BSONObject;
+import org.bson.BasicBSONObject;
 
 import java.util.Objects;
 
@@ -12,7 +15,7 @@ import java.util.Objects;
  * @author shouchen
  */
 @SuppressWarnings("unused")
-public class MemberInfo {
+public class MemberInfo implements Serialization {
     /**
      * 房间id
      */
@@ -101,5 +104,47 @@ public class MemberInfo {
     public MemberInfo setJoinTime(Long joinTime) {
         this.joinTime = joinTime;
         return this;
+    }
+
+    @Override
+    public String toString() {
+        return "MemberInfo{" +
+                "rid=" + rid +
+                ", uidCode='" + uidCode + '\'' +
+                ", role='" + role + '\'' +
+                ", permission=" + permission +
+                ", joinTime=" + joinTime +
+                '}';
+    }
+
+    /**
+     * 对象序列化
+     *
+     * @return 数据
+     */
+    @Override
+    public byte[] serialize() {
+        BSONObject object = new BasicBSONObject();
+        object.put("RID", rid);
+        object.put("UID_CODE", uidCode);
+        object.put("ROLE", role);
+        object.put("PERMISSION", permission);
+        object.put("JOIN_TIME", joinTime);
+        return BsonUtils.encode(object);
+    }
+
+    /**
+     * 反序列化为对象
+     *
+     * @param data 数据
+     */
+    @Override
+    public void deserialize(byte[] data) {
+        BSONObject object = BsonUtils.decode(data);
+        this.rid = (Integer) object.get("RID");
+        this.uidCode = (String) object.get("UID_CODE");
+        this.role = (String) object.get("ROLE");
+        this.permission = (Integer) object.get("PERMISSION");
+        this.joinTime = (Long) object.get("JOIN_TIME");
     }
 }

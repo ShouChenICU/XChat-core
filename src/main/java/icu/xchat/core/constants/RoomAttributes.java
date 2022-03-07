@@ -1,10 +1,11 @@
-package icu.xchat.core.utils;
+package icu.xchat.core.constants;
 
 /**
  * 房间可用属性集
  *
  * @author shouchen
  */
+@SuppressWarnings("unused")
 public class RoomAttributes {
     /**
      * 房间名
