@@ -127,7 +127,7 @@ public class IdentitySyncTask extends AbstractTask {
         object.put("TIMESTAMP", XChatCore.getIdentity().getTimeStamp());
         object.put("PUBLIC_KEY", XChatCore.getIdentity().getPublicKey().getEncoded());
         return new PacketBody()
-                .setId(this.packetCount = 0)
+                .setId(0)
                 .setTaskType(TaskTypes.IDENTITY_SYNC)
                 .setData(BsonUtils.encode(object));
     }
@@ -138,12 +138,6 @@ public class IdentitySyncTask extends AbstractTask {
         object.put("TIMESTAMP", identity.getTimeStamp());
         object.put("SIGNATURE", identity.getSignature());
         return BsonUtils.encode(object);
-    }
-
-    @Override
-    public void terminate(String errMsg) {
-        super.terminate(errMsg);
-        server.removeTask(this.taskId);
     }
 
     @SuppressWarnings({"all"})
@@ -168,6 +162,5 @@ public class IdentitySyncTask extends AbstractTask {
             }
         }
         super.done();
-        server.removeTask(this.taskId);
     }
 }

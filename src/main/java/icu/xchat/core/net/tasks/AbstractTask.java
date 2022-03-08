@@ -13,16 +13,13 @@ public abstract class AbstractTask implements Task {
     public static final ProgressCallBack EMPTY_PROGRESS_CALLBACK = new ProgressAdapter();
     protected Server server;
     protected int taskId;
-    protected int packetCount;
     protected ProgressCallBack progressCallBack;
 
     public AbstractTask() {
-        this.packetCount = 0;
         this.progressCallBack = EMPTY_PROGRESS_CALLBACK;
     }
 
     public AbstractTask(ProgressCallBack progressCallBack) {
-        this.packetCount = 0;
         this.progressCallBack = progressCallBack;
         progressCallBack.startProgress();
     }
@@ -50,9 +47,11 @@ public abstract class AbstractTask implements Task {
     @Override
     public void terminate(String errMsg) {
         progressCallBack.terminate(errMsg);
+        server.removeTask(this.taskId);
     }
 
     public void done() {
         progressCallBack.completeProgress();
+        server.removeTask(this.taskId);
     }
 }

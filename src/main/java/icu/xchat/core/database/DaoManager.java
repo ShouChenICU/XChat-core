@@ -1,5 +1,6 @@
 package icu.xchat.core.database;
 
+import icu.xchat.core.database.interfaces.RoomDao;
 import icu.xchat.core.database.interfaces.UserDao;
 
 /**
@@ -11,6 +12,7 @@ import icu.xchat.core.database.interfaces.UserDao;
 public class DaoManager {
     private static volatile DaoManager daoManager;
     private UserDao userDao;
+    private RoomDao roomDao;
 
     public static DaoManager getInstance() {
         if (daoManager == null) {
@@ -32,5 +34,14 @@ public class DaoManager {
 
     public UserDao getUserDao() {
         return userDao;
+    }
+
+    public DaoManager setRoomDao(RoomDao roomDao) {
+        this.roomDao = roomDao;
+        return this;
+    }
+
+    public RoomDao getRoomDao() {
+        return roomDao;
     }
 }

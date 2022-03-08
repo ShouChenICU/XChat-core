@@ -4,10 +4,7 @@ import icu.xchat.core.callbacks.interfaces.ProgressCallBack;
 import icu.xchat.core.constants.TaskTypes;
 import icu.xchat.core.entities.ServerInfo;
 import icu.xchat.core.exceptions.TaskException;
-import icu.xchat.core.net.tasks.AbstractTask;
-import icu.xchat.core.net.tasks.CommandTask;
-import icu.xchat.core.net.tasks.LoginTask;
-import icu.xchat.core.net.tasks.Task;
+import icu.xchat.core.net.tasks.*;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -56,8 +53,8 @@ public class Server extends NetNode {
                         task = new CommandTask()
                                 .setTaskId(packetBody.getTaskId());
                         break;
-                    case TaskTypes.MSG:
-                        // TODO: 2022/2/6
+                    case TaskTypes.TRANSMIT:
+                        task = new ReceiveTask();
                         break;
                     default:
                         throw new TaskException("未知的任务类型");

@@ -9,6 +9,7 @@ import icu.xchat.core.exceptions.TaskException;
 import icu.xchat.core.net.ServerManager;
 import icu.xchat.core.net.WorkerThreadPool;
 import icu.xchat.core.net.tasks.IdentitySyncTask;
+import icu.xchat.core.net.tasks.RoomSyncTask;
 
 import java.io.IOException;
 import java.util.List;
@@ -123,6 +124,22 @@ public class XChatCore {
             try {
                 ServerManager.getServerByServerCode(serverCode).addTask(
                         new IdentitySyncTask(progressCallBack)
+                );
+            } catch (TaskException e) {
+                progressCallBack.terminate(e.getMessage());
+            }
+        }
+
+        /**
+         * 同步房间
+         *
+         * @param serverCode       服务器标识码
+         * @param progressCallBack 进度回调
+         */
+        public static void syncRoom(String serverCode, ProgressCallBack progressCallBack) {
+            try {
+                ServerManager.getServerByServerCode(serverCode).addTask(
+                        new RoomSyncTask(progressCallBack)
                 );
             } catch (TaskException e) {
                 progressCallBack.terminate(e.getMessage());
