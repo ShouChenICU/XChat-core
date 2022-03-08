@@ -3,10 +3,10 @@ package icu.xchat.core.net.tasks;
 import icu.xchat.core.Identity;
 import icu.xchat.core.XChatCore;
 import icu.xchat.core.callbacks.interfaces.ProgressCallBack;
+import icu.xchat.core.constants.TaskTypes;
 import icu.xchat.core.net.PacketBody;
 import icu.xchat.core.net.WorkerThreadPool;
 import icu.xchat.core.utils.BsonUtils;
-import icu.xchat.core.constants.TaskTypes;
 import org.bson.BSONObject;
 import org.bson.BasicBSONObject;
 
@@ -64,6 +64,7 @@ public class IdentitySyncTask extends AbstractTask {
                 /*
                  * 不同步
                  */
+                isUpload = true;
                 done();
             }
         } else if (packetBody.getId() == 1) {
