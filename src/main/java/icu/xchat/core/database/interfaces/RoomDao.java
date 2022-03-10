@@ -17,12 +17,12 @@ public interface RoomDao {
     ChatRoomInfo getRoomInfoByRid(int rid);
 
     /**
-     * 插入一个房间
+     * 添加一个房间
      *
      * @param roomInfo 房间信息
      * @return 结果
      */
-    boolean insertRoomInfo(ChatRoomInfo roomInfo);
+    boolean addRoomInfo(ChatRoomInfo roomInfo);
 
     /**
      * 更新一个房间

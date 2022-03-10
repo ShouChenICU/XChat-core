@@ -59,6 +59,8 @@ public class Server extends NetNode {
                     default:
                         throw new TaskException("未知的任务类型");
                 }
+                task.setTaskId(packetBody.getTaskId());
+                ((AbstractTask) task).setServer(this);
                 taskMap.put(packetBody.getTaskId(), task);
             }
             task.handlePacket(packetBody);
