@@ -1,6 +1,5 @@
 package icu.xchat.core.net.tasks;
 
-import icu.xchat.core.database.DaoManager;
 import icu.xchat.core.entities.ChatRoomInfo;
 import icu.xchat.core.net.PacketBody;
 import icu.xchat.core.net.WorkerThreadPool;
@@ -15,8 +14,6 @@ import org.bson.BSONObject;
 public class ReceiveTask extends AbstractTransmitTask {
     public ReceiveTask() {
         super();
-        System.out.println("receive start!");
-
     }
 
     /**
@@ -48,16 +45,10 @@ public class ReceiveTask extends AbstractTransmitTask {
 
     @Override
     public void done() {
-        System.out.println("receive done!");
-
         if (dataType == TYPE_ROOM_INFO) {
             ChatRoomInfo roomInfo = new ChatRoomInfo();
             roomInfo.deserialize(dataContent);
-            if (actionType == ACTION_CREATE) {
-                DaoManager.getInstance().getRoomDao().addRoomInfo(roomInfo);
-            } else if (actionType == ACTION_UPDATE) {
-                DaoManager.getInstance().getRoomDao().updateRoomInfo(roomInfo);
-            }
+            server.putRoomInfo(roomInfo);
         }
         super.done();
     }

@@ -1,9 +1,13 @@
 package icu.xchat.core.entities;
 
+import icu.xchat.core.constants.KeyPairAlgorithms;
 import icu.xchat.core.utils.BsonUtils;
 import org.bson.BSONObject;
 import org.bson.BasicBSONObject;
 
+import java.security.KeyFactory;
+import java.security.PublicKey;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
@@ -28,6 +32,10 @@ public class UserInfo implements Serialization {
      */
     private String signature;
     /**
+     * 公钥
+     */
+    private PublicKey publicKey;
+    /**
      * 修改时间
      */
     private Long timeStamp;
@@ -47,6 +55,15 @@ public class UserInfo implements Serialization {
 
     public UserInfo setTimeStamp(Long timeStamp) {
         this.timeStamp = timeStamp;
+        return this;
+    }
+
+    public PublicKey getPublicKey() {
+        return publicKey;
+    }
+
+    public UserInfo setPublicKey(PublicKey publicKey) {
+        this.publicKey = publicKey;
         return this;
     }
 
@@ -94,16 +111,6 @@ public class UserInfo implements Serialization {
         return Objects.hash(uidCode);
     }
 
-    @Override
-    public String toString() {
-        return "UserInfo{" +
-                "uidCode='" + uidCode + '\'' +
-                ", attributeMap=" + attributeMap +
-                ", signature='" + signature + '\'' +
-                ", timeStamp=" + timeStamp +
-                '}';
-    }
-
     /**
      * 对象序列化
      *
@@ -114,6 +121,7 @@ public class UserInfo implements Serialization {
         BSONObject object = new BasicBSONObject();
         object.put("UID_CODE", uidCode);
         object.put("ATTRIBUTES", attributeMap);
+        object.put("PUB_KEY", publicKey.getEncoded());
         object.put("TIME_STAMP", timeStamp);
         object.put("SIGNATURE", signature);
         return BsonUtils.encode(object);
@@ -130,7 +138,23 @@ public class UserInfo implements Serialization {
         BSONObject object = BsonUtils.decode(data);
         this.uidCode = (String) object.get("UID_CODE");
         this.attributeMap = (Map<String, String>) object.get("ATTRIBUTES");
+        try {
+            this.publicKey = KeyFactory.getInstance(KeyPairAlgorithms.RSA).generatePublic(new X509EncodedKeySpec((byte[]) object.get("PUB_KEY")));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         this.timeStamp = (Long) object.get("TIME_STAMP");
         this.signature = (String) object.get("SIGNATURE");
+    }
+
+    @Override
+    public String toString() {
+        return "UserInfo{" +
+                "uidCode='" + uidCode + '\'' +
+                ", attributeMap=" + attributeMap +
+                ", signature='" + signature + '\'' +
+                ", publicKey=" + (publicKey == null ? "null" : "***") +
+                ", timeStamp=" + timeStamp +
+                '}';
     }
 }

@@ -105,7 +105,7 @@ public class XChatCore {
          * @param serverCode       服务器标识码
          * @param progressCallBack 进度回调
          */
-        public static void disConnectServer(String serverCode, ProgressCallBack progressCallBack) {
+        public static void disconnectServer(String serverCode, ProgressCallBack progressCallBack) {
             progressCallBack.startProgress();
             if (ServerManager.closeServer(serverCode)) {
                 progressCallBack.completeProgress();
@@ -153,6 +153,16 @@ public class XChatCore {
          */
         public static List<ServerInfo> getOnlineServersList() {
             return ServerManager.getOnlineServersList();
+        }
+
+        /**
+         * 获取服务器实体
+         *
+         * @param serverCode 服务器识别码
+         * @return 服务器实体
+         */
+        public static icu.xchat.core.net.Server getServer(String serverCode) {
+            return ServerManager.getServerByServerCode(serverCode);
         }
     }
 

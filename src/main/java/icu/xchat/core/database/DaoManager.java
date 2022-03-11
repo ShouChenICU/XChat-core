@@ -1,8 +1,6 @@
 package icu.xchat.core.database;
 
-import icu.xchat.core.database.interfaces.RoomDao;
 import icu.xchat.core.database.interfaces.ServerDao;
-import icu.xchat.core.database.interfaces.UserDao;
 
 /**
  * 数据库访问对象管理器
@@ -12,8 +10,6 @@ import icu.xchat.core.database.interfaces.UserDao;
 @SuppressWarnings("unused")
 public class DaoManager {
     private static volatile DaoManager daoManager;
-    private UserDao userDao;
-    private RoomDao roomDao;
     private ServerDao serverDao;
 
     public static DaoManager getInstance() {
@@ -28,23 +24,6 @@ public class DaoManager {
     }
 
     private DaoManager() {
-    }
-
-    public void setUserDao(UserDao userDao) {
-        this.userDao = userDao;
-    }
-
-    public UserDao getUserDao() {
-        return userDao;
-    }
-
-    public DaoManager setRoomDao(RoomDao roomDao) {
-        this.roomDao = roomDao;
-        return this;
-    }
-
-    public RoomDao getRoomDao() {
-        return roomDao;
     }
 
     public DaoManager setServerDao(ServerDao serverDao) {

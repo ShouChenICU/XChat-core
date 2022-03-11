@@ -2,7 +2,6 @@ package icu.xchat.core.net.tasks;
 
 import icu.xchat.core.callbacks.interfaces.ProgressCallBack;
 import icu.xchat.core.constants.TaskTypes;
-import icu.xchat.core.database.DaoManager;
 import icu.xchat.core.entities.ChatRoomInfo;
 import icu.xchat.core.net.PacketBody;
 import icu.xchat.core.net.WorkerThreadPool;
@@ -39,22 +38,23 @@ public class RoomSyncTask extends AbstractTask {
             BSONObject object;
             object = BsonUtils.decode(packetBody.getData());
             ridList = (List<Integer>) object.get("RID_LIST");
-
         }
         if (ridList.size() > 0) {
             sendItem();
         } else {
-            WorkerThreadPool.execute(() -> server.postPacket(new PacketBody()
-                    .setTaskId(this.taskId)
-                    .setId(2)));
-            done();
+            WorkerThreadPool.execute(() -> {
+                server.postPacket(new PacketBody()
+                        .setTaskId(this.taskId)
+                        .setId(2));
+                done();
+            });
         }
     }
 
     private void sendItem() {
         int rid = ridList.remove(0);
         WorkerThreadPool.execute(() -> {
-            ChatRoomInfo roomInfo = DaoManager.getInstance().getRoomDao().getRoomInfoByRid(rid);
+            ChatRoomInfo roomInfo = server.getRoomInfo(rid);
             try {
                 byte[] hash;
                 if (roomInfo != null) {
