@@ -1,5 +1,7 @@
 package icu.xchat.core.net.tasks;
 
+import icu.xchat.core.callbacks.adapters.ReceiveAdapter;
+import icu.xchat.core.callbacks.interfaces.ReceiveCallback;
 import icu.xchat.core.entities.ChatRoomInfo;
 import icu.xchat.core.net.PacketBody;
 import icu.xchat.core.net.WorkerThreadPool;
@@ -12,6 +14,12 @@ import org.bson.BSONObject;
  * @author shouchen
  */
 public class ReceiveTask extends AbstractTransmitTask {
+    private static ReceiveCallback receiveCallback = new ReceiveAdapter();
+
+    public static void setReceiveCallback(ReceiveCallback receiveCallback) {
+        ReceiveTask.receiveCallback = receiveCallback;
+    }
+
     public ReceiveTask() {
         super();
     }
@@ -48,7 +56,8 @@ public class ReceiveTask extends AbstractTransmitTask {
         if (dataType == TYPE_ROOM_INFO) {
             ChatRoomInfo roomInfo = new ChatRoomInfo();
             roomInfo.deserialize(dataContent);
-            server.putRoomInfo(roomInfo);
+            server.putRoom(roomInfo);
+            receiveCallback.receiveRoom(roomInfo, server.getServerInfo().getServerCode());
         }
         super.done();
     }

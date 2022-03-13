@@ -1,5 +1,7 @@
 package icu.xchat.core.net.tasks;
 
+import icu.xchat.core.callbacks.interfaces.ProgressCallBack;
+
 /**
  * 抽象传输任务
  *
@@ -45,5 +47,9 @@ public abstract class AbstractTransmitTask extends AbstractTask {
 
     public AbstractTransmitTask() {
         this.processedLength = 0;
+    }
+
+    public AbstractTransmitTask(ProgressCallBack progressCallBack) {
+        super(progressCallBack);
     }
 }

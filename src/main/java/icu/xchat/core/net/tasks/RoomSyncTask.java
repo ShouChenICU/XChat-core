@@ -54,7 +54,7 @@ public class RoomSyncTask extends AbstractTask {
     private void sendItem() {
         int rid = ridList.remove(0);
         WorkerThreadPool.execute(() -> {
-            ChatRoomInfo roomInfo = server.getRoomInfo(rid);
+            ChatRoomInfo roomInfo = server.getRoom(rid).getRoomInfo();
             try {
                 byte[] hash;
                 if (roomInfo != null) {

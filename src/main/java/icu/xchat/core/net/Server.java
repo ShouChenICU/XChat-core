@@ -2,6 +2,7 @@ package icu.xchat.core.net;
 
 import icu.xchat.core.callbacks.interfaces.ProgressCallBack;
 import icu.xchat.core.constants.TaskTypes;
+import icu.xchat.core.entities.ChatRoom;
 import icu.xchat.core.entities.ChatRoomInfo;
 import icu.xchat.core.entities.ServerInfo;
 import icu.xchat.core.exceptions.TaskException;
@@ -17,7 +18,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author shouchen
  */
 public class Server extends NetNode {
-    private final ConcurrentHashMap<Integer, ChatRoomInfo> roomMap;
+    private final ConcurrentHashMap<Integer, ChatRoom> roomMap;
     private final ConcurrentHashMap<Integer, Task> taskMap;
     private final ServerInfo serverInfo;
     private int taskId;
@@ -122,12 +123,12 @@ public class Server extends NetNode {
         this.taskMap.remove(taskId);
     }
 
-    public ChatRoomInfo getRoomInfo(Integer rid) {
+    public ChatRoom getRoom(int rid) {
         return roomMap.get(rid);
     }
 
-    public Server putRoomInfo(ChatRoomInfo roomInfo) {
-        roomMap.put(roomInfo.getRid(), roomInfo);
+    public Server putRoom(ChatRoomInfo roomInfo) {
+        roomMap.put(roomInfo.getRid(), new ChatRoom(roomInfo));
         return this;
     }
 

@@ -2,6 +2,7 @@ package icu.xchat.core;
 
 import icu.xchat.core.callbacks.interfaces.OnlineServerListUpdateCallback;
 import icu.xchat.core.callbacks.interfaces.ProgressCallBack;
+import icu.xchat.core.callbacks.interfaces.ReceiveCallback;
 import icu.xchat.core.database.DaoManager;
 import icu.xchat.core.entities.ServerInfo;
 import icu.xchat.core.exceptions.IdentityLoadException;
@@ -9,6 +10,7 @@ import icu.xchat.core.exceptions.TaskException;
 import icu.xchat.core.net.ServerManager;
 import icu.xchat.core.net.WorkerThreadPool;
 import icu.xchat.core.net.tasks.IdentitySyncTask;
+import icu.xchat.core.net.tasks.ReceiveTask;
 import icu.xchat.core.net.tasks.RoomSyncTask;
 
 import java.io.IOException;
@@ -170,8 +172,22 @@ public class XChatCore {
      * 回调方法设置
      */
     public static final class CallBack {
+        /**
+         * 服务器列表更新回调
+         *
+         * @param callback 回调
+         */
         public static void setOnlineServerListUpdateCallback(OnlineServerListUpdateCallback callback) {
             ServerManager.setOnlineServerListUpdateCallback(callback);
+        }
+
+        /**
+         * 实体信息接收回调
+         *
+         * @param receiveCallback 回调
+         */
+        public static void setReceiveCallback(ReceiveCallback receiveCallback) {
+            ReceiveTask.setReceiveCallback(receiveCallback);
         }
     }
 
