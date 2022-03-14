@@ -52,6 +52,7 @@ public abstract class AbstractTask implements Task {
         }
     }
 
+    @Override
     public void done() {
         progressCallBack.completeProgress();
         server.removeTask(this.taskId);

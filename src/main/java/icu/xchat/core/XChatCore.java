@@ -11,10 +11,7 @@ import icu.xchat.core.exceptions.IdentityLoadException;
 import icu.xchat.core.exceptions.TaskException;
 import icu.xchat.core.net.ServerManager;
 import icu.xchat.core.net.WorkerThreadPool;
-import icu.xchat.core.net.tasks.IdentitySyncTask;
-import icu.xchat.core.net.tasks.PushTask;
-import icu.xchat.core.net.tasks.ReceiveTask;
-import icu.xchat.core.net.tasks.RoomSyncTask;
+import icu.xchat.core.net.tasks.*;
 
 import java.io.IOException;
 import java.util.List;
@@ -51,6 +48,7 @@ public class XChatCore {
         }
         assert configuration != null;
         WorkerThreadPool.init(configuration.getWorkerThreadCount());
+        UserInfoManager.clearAll();
         Runtime.getRuntime().addShutdownHook(new Thread(XChatCore::logout));
     }
 
@@ -176,6 +174,24 @@ public class XChatCore {
                         .getServerByServerCode(serverCode)
                         .addTask(
                                 new RoomSyncTask(progressCallBack)
+                        );
+            } catch (TaskException e) {
+                progressCallBack.terminate(e.getMessage());
+            }
+        }
+
+        /**
+         * 同步用户信息
+         *
+         * @param serverCode       服务器识别码
+         * @param progressCallBack 进度回调
+         */
+        public static void syncUser(String serverCode, ProgressCallBack progressCallBack) {
+            try {
+                ServerManager
+                        .getServerByServerCode(serverCode)
+                        .addTask(
+                                new UserSyncTask(progressCallBack)
                         );
             } catch (TaskException e) {
                 progressCallBack.terminate(e.getMessage());

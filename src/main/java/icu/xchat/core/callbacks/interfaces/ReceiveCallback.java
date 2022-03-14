@@ -1,7 +1,9 @@
 package icu.xchat.core.callbacks.interfaces;
 
+import icu.xchat.core.UserInfoManager;
 import icu.xchat.core.entities.ChatRoomInfo;
 import icu.xchat.core.entities.MessageInfo;
+import icu.xchat.core.entities.UserInfo;
 
 /**
  * 实体接收回调接口
@@ -24,4 +26,12 @@ public interface ReceiveCallback {
      * @param serverCode  服务器识别码
      */
     void receiveMessage(MessageInfo messageInfo, String serverCode);
+
+    /**
+     * 收到一个用户信息
+     *
+     * @param userInfo   用户信息实体
+     * @param serverCode 服务器识别码
+     */
+    void receiveUser(UserInfo userInfo, String serverCode);
 }

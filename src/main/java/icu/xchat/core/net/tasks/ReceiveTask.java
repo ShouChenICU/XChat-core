@@ -1,9 +1,11 @@
 package icu.xchat.core.net.tasks;
 
+import icu.xchat.core.UserInfoManager;
 import icu.xchat.core.callbacks.adapters.ReceiveAdapter;
 import icu.xchat.core.callbacks.interfaces.ReceiveCallback;
 import icu.xchat.core.entities.ChatRoomInfo;
 import icu.xchat.core.entities.MessageInfo;
+import icu.xchat.core.entities.UserInfo;
 import icu.xchat.core.net.PacketBody;
 import icu.xchat.core.net.WorkerThreadPool;
 import icu.xchat.core.utils.BsonUtils;
@@ -66,12 +68,17 @@ public class ReceiveTask extends AbstractTransmitTask {
                 messageInfo.deserialize(dataContent);
                 server.getRoom(messageInfo.getRid()).pushMessage(messageInfo);
                 receiveCallback.receiveMessage(messageInfo, server.getServerInfo().getServerCode());
+            } else if (Objects.equals(dataType, TYPE_USER_INFO)) {
+                UserInfo userInfo = new UserInfo();
+                userInfo.deserialize(dataContent);
+                UserInfoManager.putUserInfo(userInfo);
+                receiveCallback.receiveUser(userInfo, server.getServerInfo().getServerCode());
             }
             server.postPacket(new PacketBody()
                     .setTaskId(this.taskId)
                     .setId(2));
+            super.done();
         });
-        super.done();
     }
 
     /**
