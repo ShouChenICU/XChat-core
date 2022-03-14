@@ -2,7 +2,7 @@ package icu.xchat.core.net.tasks;
 
 import icu.xchat.core.callbacks.interfaces.ProgressCallBack;
 import icu.xchat.core.constants.TaskTypes;
-import icu.xchat.core.entities.ChatRoomInfo;
+import icu.xchat.core.entities.ChatRoom;
 import icu.xchat.core.net.PacketBody;
 import icu.xchat.core.net.WorkerThreadPool;
 import icu.xchat.core.utils.BsonUtils;
@@ -54,11 +54,11 @@ public class RoomSyncTask extends AbstractTask {
     private void sendItem() {
         int rid = ridList.remove(0);
         WorkerThreadPool.execute(() -> {
-            ChatRoomInfo roomInfo = server.getRoom(rid).getRoomInfo();
+            ChatRoom chatRoom = server.getRoom(rid);
             try {
                 byte[] hash;
-                if (roomInfo != null) {
-                    hash = MessageDigest.getInstance("SHA-256").digest(roomInfo.serialize());
+                if (chatRoom != null) {
+                    hash = MessageDigest.getInstance("SHA-256").digest(chatRoom.getRoomInfo().serialize());
                 } else {
                     hash = "null".getBytes(StandardCharsets.UTF_8);
                 }

@@ -3,13 +3,16 @@ package icu.xchat.core;
 import icu.xchat.core.callbacks.interfaces.OnlineServerListUpdateCallback;
 import icu.xchat.core.callbacks.interfaces.ProgressCallBack;
 import icu.xchat.core.callbacks.interfaces.ReceiveCallback;
+import icu.xchat.core.constants.MessageTypes;
 import icu.xchat.core.database.DaoManager;
+import icu.xchat.core.entities.MessageInfo;
 import icu.xchat.core.entities.ServerInfo;
 import icu.xchat.core.exceptions.IdentityLoadException;
 import icu.xchat.core.exceptions.TaskException;
 import icu.xchat.core.net.ServerManager;
 import icu.xchat.core.net.WorkerThreadPool;
 import icu.xchat.core.net.tasks.IdentitySyncTask;
+import icu.xchat.core.net.tasks.PushTask;
 import icu.xchat.core.net.tasks.ReceiveTask;
 import icu.xchat.core.net.tasks.RoomSyncTask;
 
@@ -40,10 +43,11 @@ public class XChatCore {
      *
      * @param configuration 配置对象
      */
-    public static void init(Configuration configuration) {
-        XChatCore.configuration = configuration;
+    public static synchronized void init(Configuration configuration) {
         if (XChatCore.configuration == null) {
-            XChatCore.configuration = new Configuration();
+            XChatCore.configuration = configuration == null ? new Configuration() : configuration;
+        } else {
+            return;
         }
         assert configuration != null;
         WorkerThreadPool.init(configuration.getWorkerThreadCount());
@@ -79,6 +83,32 @@ public class XChatCore {
         if (XChatCore.identity != null) {
             ServerManager.closeAll();
             XChatCore.identity = null;
+        }
+    }
+
+    /**
+     * 推送一个消息
+     *
+     * @param msg        消息文本
+     * @param serverCode 服务器识别码
+     * @param rid        房间id
+     * @param callBack   回调
+     */
+    public static void pushMessage(String msg, String serverCode, int rid, ProgressCallBack callBack) {
+        try {
+            ServerManager
+                    .getServerByServerCode(serverCode)
+                    .addTask(new PushTask(
+                            new MessageInfo()
+                                    .setSender(identity.getUidCode())
+                                    .setRid(rid)
+                                    .setType(MessageTypes.MSG_TEXT)
+                                    .setContent(msg),
+                            PushTask.TYPE_MSG_INFO,
+                            PushTask.ACTION_CREATE,
+                            callBack));
+        } catch (TaskException e) {
+            callBack.terminate(e.getMessage());
         }
     }
 
@@ -124,9 +154,11 @@ public class XChatCore {
          */
         public static void syncIdentity(String serverCode, ProgressCallBack progressCallBack) {
             try {
-                ServerManager.getServerByServerCode(serverCode).addTask(
-                        new IdentitySyncTask(progressCallBack)
-                );
+                ServerManager
+                        .getServerByServerCode(serverCode)
+                        .addTask(
+                                new IdentitySyncTask(progressCallBack)
+                        );
             } catch (TaskException e) {
                 progressCallBack.terminate(e.getMessage());
             }
@@ -140,9 +172,11 @@ public class XChatCore {
          */
         public static void syncRoom(String serverCode, ProgressCallBack progressCallBack) {
             try {
-                ServerManager.getServerByServerCode(serverCode).addTask(
-                        new RoomSyncTask(progressCallBack)
-                );
+                ServerManager
+                        .getServerByServerCode(serverCode)
+                        .addTask(
+                                new RoomSyncTask(progressCallBack)
+                        );
             } catch (TaskException e) {
                 progressCallBack.terminate(e.getMessage());
             }

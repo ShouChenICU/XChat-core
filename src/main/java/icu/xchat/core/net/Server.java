@@ -10,6 +10,8 @@ import icu.xchat.core.net.tasks.*;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -123,12 +125,16 @@ public class Server extends NetNode {
         this.taskMap.remove(taskId);
     }
 
+    public List<Integer> getRidList() {
+        return new ArrayList<>(roomMap.keySet());
+    }
+
     public ChatRoom getRoom(int rid) {
         return roomMap.get(rid);
     }
 
     public Server putRoom(ChatRoomInfo roomInfo) {
-        roomMap.put(roomInfo.getRid(), new ChatRoom(roomInfo));
+        roomMap.put(roomInfo.getRid(), new ChatRoom(roomInfo, serverInfo.getServerCode()));
         return this;
     }
 

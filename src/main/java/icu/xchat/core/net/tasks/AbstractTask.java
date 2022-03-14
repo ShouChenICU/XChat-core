@@ -47,7 +47,9 @@ public abstract class AbstractTask implements Task {
     @Override
     public void terminate(String errMsg) {
         progressCallBack.terminate(errMsg);
-        server.removeTask(this.taskId);
+        if (server != null) {
+            server.removeTask(this.taskId);
+        }
     }
 
     public void done() {

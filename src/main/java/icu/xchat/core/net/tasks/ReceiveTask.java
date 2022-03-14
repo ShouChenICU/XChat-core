@@ -3,10 +3,13 @@ package icu.xchat.core.net.tasks;
 import icu.xchat.core.callbacks.adapters.ReceiveAdapter;
 import icu.xchat.core.callbacks.interfaces.ReceiveCallback;
 import icu.xchat.core.entities.ChatRoomInfo;
+import icu.xchat.core.entities.MessageInfo;
 import icu.xchat.core.net.PacketBody;
 import icu.xchat.core.net.WorkerThreadPool;
 import icu.xchat.core.utils.BsonUtils;
 import org.bson.BSONObject;
+
+import java.util.Objects;
 
 /**
  * 数据接收任务
@@ -36,29 +39,38 @@ public class ReceiveTask extends AbstractTransmitTask {
             this.actionType = (int) object.get("ACTION_TYPE");
             this.dataType = (int) object.get("DATA_TYPE");
             this.dataContent = new byte[(int) object.get("DATA_SIZE")];
-            WorkerThreadPool.execute(() -> server.postPacket(new PacketBody()
-                    .setTaskId(this.taskId)
-                    .setId(0)));
         } else if (packetBody.getId() == 1) {
             byte[] buf = packetBody.getData();
             System.arraycopy(buf, 0, dataContent, processedLength, buf.length);
             processedLength += buf.length;
+        }
+        if (processedLength == dataContent.length) {
+            done();
+        } else {
             WorkerThreadPool.execute(() -> server.postPacket(new PacketBody()
                     .setTaskId(this.taskId)
-                    .setId(0)));
-        } else {
-            done();
+                    .setId(1)));
         }
     }
 
     @Override
     public void done() {
-        if (dataType == TYPE_ROOM_INFO) {
-            ChatRoomInfo roomInfo = new ChatRoomInfo();
-            roomInfo.deserialize(dataContent);
-            server.putRoom(roomInfo);
-            receiveCallback.receiveRoom(roomInfo, server.getServerInfo().getServerCode());
-        }
+        WorkerThreadPool.execute(() -> {
+            if (Objects.equals(dataType, TYPE_ROOM_INFO)) {
+                ChatRoomInfo roomInfo = new ChatRoomInfo();
+                roomInfo.deserialize(dataContent);
+                server.putRoom(roomInfo);
+                receiveCallback.receiveRoom(roomInfo, server.getServerInfo().getServerCode());
+            } else if (Objects.equals(dataType, TYPE_MSG_INFO)) {
+                MessageInfo messageInfo = new MessageInfo();
+                messageInfo.deserialize(dataContent);
+                server.getRoom(messageInfo.getRid()).pushMessage(messageInfo);
+                receiveCallback.receiveMessage(messageInfo, server.getServerInfo().getServerCode());
+            }
+            server.postPacket(new PacketBody()
+                    .setTaskId(this.taskId)
+                    .setId(2));
+        });
         super.done();
     }
 

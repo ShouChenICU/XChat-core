@@ -10,12 +10,18 @@ import java.util.List;
  * @author shouchen
  */
 public class ChatRoom {
-    private ChatRoomInfo roomInfo;
-    private List<MessageInfo> messageList;
+    private final String serverCode;
+    private final ChatRoomInfo roomInfo;
+    private final List<MessageInfo> messageList;
 
-    public ChatRoom(ChatRoomInfo roomInfo) {
+    public ChatRoom(ChatRoomInfo roomInfo, String serverCode) {
         this.roomInfo = roomInfo;
+        this.serverCode = serverCode;
         this.messageList = new ArrayList<>();
+    }
+
+    public String getServerCode() {
+        return serverCode;
     }
 
     public int getRid() {
@@ -26,7 +32,13 @@ public class ChatRoom {
         return roomInfo;
     }
 
-    // TODO: 2022/3/13  
+    public ChatRoom pushMessage(MessageInfo messageInfo) {
+        synchronized (this.messageList) {
+            this.messageList.add(messageInfo);
+            this.messageList.sort((a, b) -> (int) (a.getTimeStamp() - b.getTimeStamp()));
+        }
+        return this;
+    }
 
     public List<MessageInfo> getMessageList() {
         return Collections.unmodifiableList(messageList);
