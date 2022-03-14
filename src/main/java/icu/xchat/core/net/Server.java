@@ -10,8 +10,10 @@ import icu.xchat.core.net.tasks.*;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -69,7 +71,11 @@ public class Server extends NetNode {
                 ((AbstractTask) task).setServer(this);
                 taskMap.put(packetBody.getTaskId(), task);
             }
-            task.handlePacket(packetBody);
+            if (!Objects.equals(packetBody.getTaskType(), TaskTypes.ERROR)) {
+                task.handlePacket(packetBody);
+            } else {
+                task.terminate(new String(packetBody.getData(), StandardCharsets.UTF_8));
+            }
         } else {
             throw new Exception("task id = 0");
         }
