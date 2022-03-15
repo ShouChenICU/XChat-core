@@ -30,8 +30,8 @@ public abstract class NetNode {
         this.channel = SocketChannel.open();
         this.channel.socket().connect(inetSocketAddress, timeOut);
         this.channel.configureBlocking(false);
-        this.readBuffer = ByteBuffer.allocateDirect(512);
-        this.writeBuffer = ByteBuffer.allocateDirect(512);
+        this.readBuffer = ByteBuffer.allocateDirect(4096);
+        this.writeBuffer = ByteBuffer.allocateDirect(4096);
         this.packageUtils = new PackageUtils();
         this.packetStatus = 0;
         this.packetLength = 0;

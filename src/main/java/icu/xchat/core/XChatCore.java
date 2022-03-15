@@ -5,6 +5,7 @@ import icu.xchat.core.callbacks.interfaces.ProgressCallBack;
 import icu.xchat.core.callbacks.interfaces.ReceiveCallback;
 import icu.xchat.core.constants.MessageTypes;
 import icu.xchat.core.database.DaoManager;
+import icu.xchat.core.entities.ChatRoomInfo;
 import icu.xchat.core.entities.MessageInfo;
 import icu.xchat.core.entities.ServerInfo;
 import icu.xchat.core.exceptions.IdentityLoadException;
@@ -192,6 +193,25 @@ public class XChatCore {
                         .getServerByServerCode(serverCode)
                         .addTask(
                                 new UserSyncTask(progressCallBack)
+                        );
+            } catch (TaskException e) {
+                progressCallBack.terminate(e.getMessage());
+            }
+        }
+
+        /**
+         * 创建一个房间
+         *
+         * @param serverCode       服务器识别码
+         * @param roomInfo         房间信息
+         * @param progressCallBack 进度回调
+         */
+        public static void createRoom(String serverCode, ChatRoomInfo roomInfo, ProgressCallBack progressCallBack) {
+            try {
+                ServerManager
+                        .getServerByServerCode(serverCode)
+                        .addTask(
+                                new PushTask(roomInfo, PushTask.TYPE_ROOM_INFO, PushTask.ACTION_CREATE, progressCallBack)
                         );
             } catch (TaskException e) {
                 progressCallBack.terminate(e.getMessage());
