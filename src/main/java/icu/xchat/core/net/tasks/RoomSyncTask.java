@@ -13,6 +13,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * 房间信息同步任务
@@ -34,20 +35,17 @@ public class RoomSyncTask extends AbstractTask {
     @SuppressWarnings("unchecked")
     @Override
     public void handlePacket(PacketBody packetBody) {
-        if (packetBody.getId() == 0) {
+        if (Objects.equals(packetBody.getId(), 0)) {
             BSONObject object;
             object = BsonUtils.decode(packetBody.getData());
             ridList = (List<Integer>) object.get("RID_LIST");
-        }
-        if (ridList.size() > 0) {
             sendItem();
+        } else if (Objects.equals(packetBody.getId(), 1)) {
+            if (ridList.size() > 0) {
+                sendItem();
+            }
         } else {
-            WorkerThreadPool.execute(() -> {
-                server.postPacket(new PacketBody()
-                        .setTaskId(this.taskId)
-                        .setId(2));
-                done();
-            });
+            done();
         }
     }
 

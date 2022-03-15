@@ -1,7 +1,11 @@
 package icu.xchat.core.net.tasks;
 
+import icu.xchat.core.Identity;
+import icu.xchat.core.UserInfoManager;
+import icu.xchat.core.XChatCore;
 import icu.xchat.core.callbacks.interfaces.ProgressCallBack;
 import icu.xchat.core.constants.TaskTypes;
+import icu.xchat.core.entities.UserInfo;
 import icu.xchat.core.net.PacketBody;
 
 /**
@@ -23,6 +27,18 @@ public class UserSyncTask extends AbstractTask {
     @Override
     public void handlePacket(PacketBody packetBody) throws Exception {
         done();
+    }
+
+    @Override
+    public void done() {
+        Identity identity = XChatCore.getIdentity();
+        UserInfoManager.putUserInfo(new UserInfo()
+                .setUidCode(identity.getUidCode())
+                .setAttributeMap(identity.getAttributes())
+                .setPublicKey(identity.getPublicKey())
+                .setSignature(identity.getSignature())
+                .setTimeStamp(identity.getTimeStamp()));
+        super.done();
     }
 
     /**
