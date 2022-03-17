@@ -131,6 +131,11 @@ public class Server extends NetNode {
         this.taskMap.remove(taskId);
     }
 
+    /**
+     * 获取已加载的房间列表
+     *
+     * @return 房间列表
+     */
     public List<Integer> getRidList() {
         return new ArrayList<>(roomMap.keySet());
     }

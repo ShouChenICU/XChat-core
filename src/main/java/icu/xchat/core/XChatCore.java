@@ -200,6 +200,27 @@ public class XChatCore {
         }
 
         /**
+         * 同步指定时间戳之前指定数量的消息
+         *
+         * @param serverCode       服务器识别码
+         * @param rid              房间id
+         * @param time             时间戳
+         * @param count            数量
+         * @param progressCallBack 进度回调
+         */
+        public static void syncMessage(String serverCode, int rid, long time, int count, ProgressCallBack progressCallBack) {
+            try {
+                ServerManager
+                        .getServerByServerCode(serverCode)
+                        .addTask(
+                                new MessageSyncTask(rid, time, count, progressCallBack)
+                        );
+            } catch (TaskException e) {
+                progressCallBack.terminate(e.getMessage());
+            }
+        }
+
+        /**
          * 创建一个房间
          *
          * @param serverCode       服务器识别码

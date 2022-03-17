@@ -10,8 +10,8 @@ import icu.xchat.core.net.PacketBody;
  */
 public class RequestTask extends AbstractTransmitTask {
 
-    public RequestTask(ProgressCallBack progressCallBack) {
-        super(progressCallBack);
+    public RequestTask(int type, int action, ProgressCallBack progressCallBack) {
+        // TODO: 2022/3/17
     }
 
     /**
@@ -21,7 +21,7 @@ public class RequestTask extends AbstractTransmitTask {
      */
     @Override
     public void handlePacket(PacketBody packetBody) throws Exception {
-
+        // TODO: 2022/3/17
     }
 
     /**
@@ -31,6 +31,7 @@ public class RequestTask extends AbstractTransmitTask {
      */
     @Override
     public PacketBody startPacket() {
+        // TODO: 2022/3/17
         return null;
     }
 }

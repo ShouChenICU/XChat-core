@@ -9,6 +9,7 @@ import java.util.List;
  *
  * @author shouchen
  */
+@SuppressWarnings("unused")
 public class ChatRoom {
     private final String serverCode;
     private final ChatRoomInfo roomInfo;
@@ -35,7 +36,7 @@ public class ChatRoom {
     public ChatRoom pushMessage(MessageInfo messageInfo) {
         synchronized (this.messageList) {
             this.messageList.add(messageInfo);
-            this.messageList.sort((a, b) -> (int) (a.getTimeStamp() - b.getTimeStamp()));
+            this.messageList.sort((a, b) -> Long.compare(a.getTimeStamp() - b.getTimeStamp(), 0L));
         }
         return this;
     }

@@ -3,6 +3,7 @@ package icu.xchat.core.net.tasks;
 import icu.xchat.core.UserInfoManager;
 import icu.xchat.core.callbacks.adapters.ReceiveAdapter;
 import icu.xchat.core.callbacks.interfaces.ReceiveCallback;
+import icu.xchat.core.entities.ChatRoom;
 import icu.xchat.core.entities.ChatRoomInfo;
 import icu.xchat.core.entities.MessageInfo;
 import icu.xchat.core.entities.UserInfo;
@@ -66,8 +67,17 @@ public class ReceiveTask extends AbstractTransmitTask {
             } else if (Objects.equals(dataType, TYPE_MSG_INFO)) {
                 MessageInfo messageInfo = new MessageInfo();
                 messageInfo.deserialize(dataContent);
-                server.getRoom(messageInfo.getRid()).pushMessage(messageInfo);
-                receiveCallback.receiveMessage(messageInfo, server.getServerInfo().getServerCode());
+                ChatRoom chatRoom = server.getRoom(messageInfo.getRid());
+                if (chatRoom != null) {
+                    chatRoom.pushMessage(messageInfo);
+                    receiveCallback.receiveMessage(messageInfo, server.getServerInfo().getServerCode());
+                } else {
+                    this.terminate("本地找不到对应的聊天室！");
+                    server.postPacket(new PacketBody()
+                            .setTaskId(this.taskId)
+                            .setId(2));
+                    return;
+                }
             } else if (Objects.equals(dataType, TYPE_USER_INFO)) {
                 UserInfo userInfo = new UserInfo();
                 userInfo.deserialize(dataContent);
