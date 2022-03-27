@@ -1,8 +1,8 @@
 package icu.xchat.core.net.tasks;
 
 import icu.xchat.core.UserInfoManager;
-import icu.xchat.core.callbacks.adapters.ReceiveAdapter;
-import icu.xchat.core.callbacks.interfaces.ReceiveCallback;
+import icu.xchat.core.callbacks.interfaces.UpdateRoomInfoCallBack;
+import icu.xchat.core.callbacks.interfaces.UpdateUserInfoCallBack;
 import icu.xchat.core.entities.ChatRoom;
 import icu.xchat.core.entities.ChatRoomInfo;
 import icu.xchat.core.entities.MessageInfo;
@@ -20,10 +20,15 @@ import java.util.Objects;
  * @author shouchen
  */
 public class ReceiveTask extends AbstractTransmitTask {
-    private static ReceiveCallback receiveCallback = new ReceiveAdapter();
+    private static UpdateRoomInfoCallBack updateRoomInfoCallBack;
+    private static UpdateUserInfoCallBack updateUserInfoCallBack;
 
-    public static void setReceiveCallback(ReceiveCallback receiveCallback) {
-        ReceiveTask.receiveCallback = receiveCallback;
+    public static void setUpdateRoomInfoCallBack(UpdateRoomInfoCallBack updateRoomInfoCallBack) {
+        ReceiveTask.updateRoomInfoCallBack = updateRoomInfoCallBack;
+    }
+
+    public static void setUpdateUserInfoCallBack(UpdateUserInfoCallBack updateUserInfoCallBack) {
+        ReceiveTask.updateUserInfoCallBack = updateUserInfoCallBack;
     }
 
     public ReceiveTask() {
@@ -62,13 +67,14 @@ public class ReceiveTask extends AbstractTransmitTask {
             if (Objects.equals(dataType, TYPE_ROOM_INFO)) {
                 ChatRoomInfo roomInfo = new ChatRoomInfo(dataContent);
                 server.updateRoomInfo(roomInfo);
-                receiveCallback.receiveRoom(roomInfo, server.getServerInfo().getServerCode());
+                updateRoomInfoCallBack.updateRoomInfo(roomInfo, server.getServerInfo().getServerCode());
             } else if (Objects.equals(dataType, TYPE_MSG_INFO)) {
                 MessageInfo messageInfo = new MessageInfo(dataContent);
                 ChatRoom chatRoom = server.getChatRoom(messageInfo.getRid());
                 if (chatRoom != null) {
                     chatRoom.pushMessage(messageInfo);
-                    receiveCallback.receiveMessage(messageInfo, server.getServerInfo().getServerCode());
+
+
                 } else {
                     this.terminate("本地找不到对应的聊天室！");
                     server.postPacket(new PacketBody()
@@ -79,7 +85,7 @@ public class ReceiveTask extends AbstractTransmitTask {
             } else if (Objects.equals(dataType, TYPE_USER_INFO)) {
                 UserInfo userInfo = new UserInfo(dataContent);
                 UserInfoManager.putUserInfo(userInfo);
-                receiveCallback.receiveUser(userInfo, server.getServerInfo().getServerCode());
+                updateUserInfoCallBack.updateUserInfo(userInfo);
             }
             server.postPacket(new PacketBody()
                     .setTaskId(this.taskId)

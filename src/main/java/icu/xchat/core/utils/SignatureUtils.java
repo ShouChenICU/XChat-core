@@ -25,7 +25,7 @@ public final class SignatureUtils {
      * @param messageInfo 消息实体
      * @param privateKey  私钥
      */
-    public static void signMsg(MessageInfo messageInfo, PrivateKey privateKey) throws SignatureException {
+    public static MessageInfo signMsg(MessageInfo messageInfo, PrivateKey privateKey) throws SignatureException {
         try {
             BSONObject object = new BasicBSONObject();
             object.put("SENDER", messageInfo.getSender());
@@ -40,6 +40,7 @@ public final class SignatureUtils {
         } catch (Exception e) {
             throw new SignatureException(e);
         }
+        return messageInfo;
     }
 
     /**

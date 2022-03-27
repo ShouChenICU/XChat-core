@@ -1,8 +1,9 @@
 package icu.xchat.core;
 
-import icu.xchat.core.callbacks.interfaces.OnlineServerListUpdateCallback;
 import icu.xchat.core.callbacks.interfaces.ProgressCallBack;
-import icu.xchat.core.callbacks.interfaces.ReceiveCallback;
+import icu.xchat.core.callbacks.interfaces.UpdateOnlineServerListCallback;
+import icu.xchat.core.callbacks.interfaces.UpdateRoomInfoCallBack;
+import icu.xchat.core.callbacks.interfaces.UpdateUserInfoCallBack;
 import icu.xchat.core.constants.MessageTypes;
 import icu.xchat.core.database.DaoManager;
 import icu.xchat.core.entities.ChatRoomInfo;
@@ -10,11 +11,14 @@ import icu.xchat.core.entities.MessageInfo;
 import icu.xchat.core.entities.ServerInfo;
 import icu.xchat.core.exceptions.IdentityLoadException;
 import icu.xchat.core.exceptions.TaskException;
+import icu.xchat.core.net.Server;
 import icu.xchat.core.net.ServerManager;
 import icu.xchat.core.net.WorkerThreadPool;
 import icu.xchat.core.net.tasks.*;
+import icu.xchat.core.utils.SignatureUtils;
 
 import java.io.IOException;
+import java.security.SignatureException;
 import java.util.List;
 
 /**
@@ -95,18 +99,23 @@ public class XChatCore {
      */
     public static void pushMessage(String msg, String serverCode, int rid, ProgressCallBack callBack) {
         try {
-            ServerManager
-                    .getServerByServerCode(serverCode)
-                    .addTask(new PushTask(
+            Server server = ServerManager.getServerByServerCode(serverCode);
+            if (server == null) {
+                callBack.terminate("找不到服务器！");
+                return;
+            }
+            server.addTask(new PushTask(
+                    SignatureUtils.signMsg(
                             new MessageInfo()
                                     .setSender(identity.getUidCode())
                                     .setRid(rid)
                                     .setType(MessageTypes.MSG_TEXT)
                                     .setContent(msg),
-                            PushTask.TYPE_MSG_INFO,
-                            PushTask.ACTION_CREATE,
-                            callBack));
-        } catch (TaskException e) {
+                            identity.getPrivateKey()),
+                    PushTask.TYPE_MSG_INFO,
+                    PushTask.ACTION_CREATE,
+                    callBack));
+        } catch (TaskException | SignatureException e) {
             callBack.terminate(e.getMessage());
         }
     }
@@ -114,7 +123,7 @@ public class XChatCore {
     /**
      * 服务器相关方法
      */
-    public static final class Server {
+    public static final class Servers {
         /**
          * 尝试连接一个服务器
          *
@@ -144,6 +153,28 @@ public class XChatCore {
                 progressCallBack.terminate("找不到该服务器！");
             }
         }
+
+        /**
+         * 获取在线服务器信息列表
+         *
+         * @return 在线服务器信息列表
+         */
+        public static List<ServerInfo> getOnlineServersList() {
+            return ServerManager.getOnlineServersList();
+        }
+
+        /**
+         * 获取服务器实体
+         *
+         * @param serverCode 服务器识别码
+         * @return 服务器实体
+         */
+        public static icu.xchat.core.net.Server getServer(String serverCode) {
+            return ServerManager.getServerByServerCode(serverCode);
+        }
+    }
+
+    public static final class Tasks {
 
         /**
          * 同步身份
@@ -238,25 +269,6 @@ public class XChatCore {
                 progressCallBack.terminate(e.getMessage());
             }
         }
-
-        /**
-         * 获取在线服务器信息列表
-         *
-         * @return 在线服务器信息列表
-         */
-        public static List<ServerInfo> getOnlineServersList() {
-            return ServerManager.getOnlineServersList();
-        }
-
-        /**
-         * 获取服务器实体
-         *
-         * @param serverCode 服务器识别码
-         * @return 服务器实体
-         */
-        public static icu.xchat.core.net.Server getServer(String serverCode) {
-            return ServerManager.getServerByServerCode(serverCode);
-        }
     }
 
     /**
@@ -268,17 +280,26 @@ public class XChatCore {
          *
          * @param callback 回调
          */
-        public static void setOnlineServerListUpdateCallback(OnlineServerListUpdateCallback callback) {
-            ServerManager.setOnlineServerListUpdateCallback(callback);
+        public static void setUpdateOnlineServerListCallback(UpdateOnlineServerListCallback callback) {
+            ServerManager.setUpdateOnlineServerListCallback(callback);
         }
 
         /**
-         * 实体信息接收回调
+         * 设置房间信息更新回调
          *
-         * @param receiveCallback 回调
+         * @param callBack 回调
          */
-        public static void setReceiveCallback(ReceiveCallback receiveCallback) {
-            ReceiveTask.setReceiveCallback(receiveCallback);
+        public static void setUpdateRoomInfoCallBack(UpdateRoomInfoCallBack callBack) {
+            ReceiveTask.setUpdateRoomInfoCallBack(callBack);
+        }
+
+        /**
+         * 设置用户信息更新回调
+         *
+         * @param callBack 回调
+         */
+        public static void setUpdateUserInfoCallBack(UpdateUserInfoCallBack callBack) {
+            ReceiveTask.setUpdateUserInfoCallBack(callBack);
         }
     }
 

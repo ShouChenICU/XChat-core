@@ -9,6 +9,6 @@ import java.util.List;
  *
  * @author shouchen
  */
-public interface OnlineServerListUpdateCallback {
+public interface UpdateOnlineServerListCallback {
     void onlineServerListUpdate(List<ServerInfo> serverInfoList);
 }

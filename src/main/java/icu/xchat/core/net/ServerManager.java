@@ -1,10 +1,10 @@
 package icu.xchat.core.net;
 
-import icu.xchat.core.callbacks.interfaces.OnlineServerListUpdateCallback;
 import icu.xchat.core.callbacks.interfaces.ProgressCallBack;
+import icu.xchat.core.callbacks.interfaces.UpdateOnlineServerListCallback;
+import icu.xchat.core.constants.TaskTypes;
 import icu.xchat.core.entities.ServerInfo;
 import icu.xchat.core.exceptions.TaskException;
-import icu.xchat.core.constants.TaskTypes;
 
 import java.io.IOException;
 import java.util.*;
@@ -19,7 +19,7 @@ import java.util.concurrent.TimeUnit;
 public final class ServerManager {
     private static final ScheduledThreadPoolExecutor TIMER_EXECUTOR;
     private static final Map<String, Server> onlineServersMap;
-    private static OnlineServerListUpdateCallback onlineServerListUpdateCallback;
+    private static UpdateOnlineServerListCallback updateOnlineServerListCallback;
 
     static {
         TIMER_EXECUTOR = new ScheduledThreadPoolExecutor(1, r -> {
@@ -28,7 +28,7 @@ public final class ServerManager {
             return thread;
         });
         onlineServersMap = new HashMap<>();
-        onlineServerListUpdateCallback = list -> {
+        updateOnlineServerListCallback = list -> {
         };
     }
 
@@ -47,7 +47,7 @@ public final class ServerManager {
             Server server = new Server(serverInfo, progressCallBack);
             onlineServersMap.put(serverInfo.getServerCode(), server);
             heartTest(server);
-            onlineServerListUpdateCallback.onlineServerListUpdate(getOnlineServersList());
+            updateOnlineServerListCallback.onlineServerListUpdate(getOnlineServersList());
         }
     }
 
@@ -78,7 +78,7 @@ public final class ServerManager {
         synchronized (onlineServersMap) {
             if (onlineServersMap.containsKey(server.getServerInfo().getServerCode())) {
                 onlineServersMap.remove(server.getServerInfo().getServerCode());
-                onlineServerListUpdateCallback.onlineServerListUpdate(getOnlineServersList());
+                updateOnlineServerListCallback.onlineServerListUpdate(getOnlineServersList());
             } else {
                 isOnline = false;
             }
@@ -107,7 +107,7 @@ public final class ServerManager {
         synchronized (onlineServersMap) {
             if (onlineServersMap.containsKey(serverCode)) {
                 server = onlineServersMap.remove(serverCode);
-                onlineServerListUpdateCallback.onlineServerListUpdate(getOnlineServersList());
+                updateOnlineServerListCallback.onlineServerListUpdate(getOnlineServersList());
             } else {
                 return false;
             }
@@ -170,7 +170,12 @@ public final class ServerManager {
         }
     }
 
-    public static void setOnlineServerListUpdateCallback(OnlineServerListUpdateCallback onlineServerListUpdateCallback) {
-        ServerManager.onlineServerListUpdateCallback = onlineServerListUpdateCallback;
+    /**
+     * 设置服务器列表更新回调
+     *
+     * @param updateOnlineServerListCallback 回调
+     */
+    public static void setUpdateOnlineServerListCallback(UpdateOnlineServerListCallback updateOnlineServerListCallback) {
+        ServerManager.updateOnlineServerListCallback = updateOnlineServerListCallback;
     }
 }
