@@ -12,8 +12,8 @@ import java.util.List;
 @SuppressWarnings("unused")
 public class ChatRoom {
     private final String serverCode;
-    private final ChatRoomInfo roomInfo;
     private final List<MessageInfo> messageList;
+    private ChatRoomInfo roomInfo;
 
     public ChatRoom(ChatRoomInfo roomInfo, String serverCode) {
         this.roomInfo = roomInfo;
@@ -31,6 +31,11 @@ public class ChatRoom {
 
     public ChatRoomInfo getRoomInfo() {
         return roomInfo;
+    }
+
+    public ChatRoom setRoomInfo(ChatRoomInfo roomInfo) {
+        this.roomInfo = roomInfo;
+        return this;
     }
 
     public ChatRoom pushMessage(MessageInfo messageInfo) {

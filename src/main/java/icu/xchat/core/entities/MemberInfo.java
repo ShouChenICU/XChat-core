@@ -37,6 +37,13 @@ public class MemberInfo implements Serialization {
      */
     private Long joinTime;
 
+    public MemberInfo() {
+    }
+
+    public MemberInfo(byte[] data) {
+        this.deserialize(data);
+    }
+
     public boolean isOwner() {
         return Objects.equals(MemberRoles.ROLE_OWNER, this.role);
     }

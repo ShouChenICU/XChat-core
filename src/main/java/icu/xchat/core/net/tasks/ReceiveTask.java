@@ -60,14 +60,12 @@ public class ReceiveTask extends AbstractTransmitTask {
     public void done() {
         WorkerThreadPool.execute(() -> {
             if (Objects.equals(dataType, TYPE_ROOM_INFO)) {
-                ChatRoomInfo roomInfo = new ChatRoomInfo();
-                roomInfo.deserialize(dataContent);
-                server.putRoom(roomInfo);
+                ChatRoomInfo roomInfo = new ChatRoomInfo(dataContent);
+                server.updateRoomInfo(roomInfo);
                 receiveCallback.receiveRoom(roomInfo, server.getServerInfo().getServerCode());
             } else if (Objects.equals(dataType, TYPE_MSG_INFO)) {
-                MessageInfo messageInfo = new MessageInfo();
-                messageInfo.deserialize(dataContent);
-                ChatRoom chatRoom = server.getRoom(messageInfo.getRid());
+                MessageInfo messageInfo = new MessageInfo(dataContent);
+                ChatRoom chatRoom = server.getChatRoom(messageInfo.getRid());
                 if (chatRoom != null) {
                     chatRoom.pushMessage(messageInfo);
                     receiveCallback.receiveMessage(messageInfo, server.getServerInfo().getServerCode());
@@ -79,8 +77,7 @@ public class ReceiveTask extends AbstractTransmitTask {
                     return;
                 }
             } else if (Objects.equals(dataType, TYPE_USER_INFO)) {
-                UserInfo userInfo = new UserInfo();
-                userInfo.deserialize(dataContent);
+                UserInfo userInfo = new UserInfo(dataContent);
                 UserInfoManager.putUserInfo(userInfo);
                 receiveCallback.receiveUser(userInfo, server.getServerInfo().getServerCode());
             }

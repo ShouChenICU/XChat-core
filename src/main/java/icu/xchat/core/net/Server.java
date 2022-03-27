@@ -11,9 +11,7 @@ import icu.xchat.core.net.tasks.*;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -22,7 +20,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author shouchen
  */
 public class Server extends NetNode {
-    private final ConcurrentHashMap<Integer, ChatRoom> roomMap;
+    private final Map<Integer, ChatRoom> roomMap;
     private final ConcurrentHashMap<Integer, Task> taskMap;
     private final ServerInfo serverInfo;
     private int taskId;
@@ -36,7 +34,7 @@ public class Server extends NetNode {
     public Server(ServerInfo serverInfo, ProgressCallBack loginProgressCallBack) throws IOException, TaskException {
         super(new InetSocketAddress(serverInfo.getHost(), serverInfo.getPort()), 1024);
         this.serverInfo = serverInfo;
-        this.roomMap = new ConcurrentHashMap<>();
+        this.roomMap = new HashMap<>();
         this.taskMap = new ConcurrentHashMap<>();
         this.taskId = 1;
         addTask(new LoginTask(loginProgressCallBack));
@@ -140,12 +138,25 @@ public class Server extends NetNode {
         return new ArrayList<>(roomMap.keySet());
     }
 
-    public ChatRoom getRoom(int rid) {
+    public ChatRoom getChatRoom(int rid) {
         return roomMap.get(rid);
     }
 
-    public Server putRoom(ChatRoomInfo roomInfo) {
-        roomMap.put(roomInfo.getRid(), new ChatRoom(roomInfo, serverInfo.getServerCode()));
+    /**
+     * 更新房间信息
+     *
+     * @param roomInfo 房间信息
+     */
+    public Server updateRoomInfo(ChatRoomInfo roomInfo) {
+        synchronized (roomMap) {
+            ChatRoom chatRoom = roomMap.get(roomInfo.getRid());
+            if (chatRoom == null) {
+                chatRoom = new ChatRoom(roomInfo, serverInfo.getServerCode());
+                roomMap.put(roomInfo.getRid(), chatRoom);
+            } else {
+                chatRoom.setRoomInfo(roomInfo);
+            }
+        }
         return this;
     }
 

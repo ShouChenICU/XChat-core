@@ -35,11 +35,6 @@
                     </descriptorRefs>
                     <appendAssemblyId>false</appendAssemblyId>
                     <finalName>${project.name}-${project.version}</finalName>
-                    <archive>
-                        <manifest>
-                            <mainClass>icu.xchat.test.Test1</mainClass>
-                        </manifest>
-                    </archive>
                 </configuration>
                 <executions>
                     <execution>

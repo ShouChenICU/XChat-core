@@ -40,6 +40,13 @@ public class UserInfo implements Serialization {
      */
     private Long timeStamp;
 
+    public UserInfo() {
+    }
+
+    public UserInfo(byte[] data) {
+        this.deserialize(data);
+    }
+
     public String getUidCode() {
         return uidCode;
     }

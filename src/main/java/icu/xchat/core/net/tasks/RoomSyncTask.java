@@ -39,9 +39,11 @@ public class RoomSyncTask extends AbstractTask {
             BSONObject object;
             object = BsonUtils.decode(packetBody.getData());
             ridList = (List<Integer>) object.get("RID_LIST");
-            sendItem();
+            if (!ridList.isEmpty()) {
+                sendItem();
+            }
         } else if (Objects.equals(packetBody.getId(), 1)) {
-            if (ridList.size() > 0) {
+            if (!ridList.isEmpty()) {
                 sendItem();
             }
         } else {
@@ -52,7 +54,7 @@ public class RoomSyncTask extends AbstractTask {
     private void sendItem() {
         int rid = ridList.remove(0);
         WorkerThreadPool.execute(() -> {
-            ChatRoom chatRoom = server.getRoom(rid);
+            ChatRoom chatRoom = server.getChatRoom(rid);
             try {
                 byte[] hash;
                 if (chatRoom != null) {

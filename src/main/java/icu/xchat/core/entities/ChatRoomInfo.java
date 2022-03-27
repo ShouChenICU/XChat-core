@@ -36,6 +36,10 @@ public class ChatRoomInfo implements Serialization {
         this.memberInfoMap = new HashMap<>();
     }
 
+    public ChatRoomInfo(byte[] data) {
+        this.deserialize(data);
+    }
+
     public Integer getRid() {
         return rid;
     }
@@ -127,9 +131,8 @@ public class ChatRoomInfo implements Serialization {
         this.rid = (Integer) object.get("RID");
         this.memberInfoMap = new HashMap<>();
         List<byte[]> members = (List<byte[]>) object.get("MEMBERS");
-        for (byte[] member : members) {
-            MemberInfo memberInfo = new MemberInfo();
-            memberInfo.deserialize(member);
+        for (byte[] memberData : members) {
+            MemberInfo memberInfo = new MemberInfo(memberData);
             this.addMember(memberInfo);
         }
         this.attributeMap = (Map<String, String>) object.get("ATTRIBUTES");
