@@ -73,6 +73,9 @@ public class ChatRoom {
             this.messageList.add(messageInfo);
             this.messageList.sort((a, b) -> Long.compare(a.getTimeStamp() - b.getTimeStamp(), 0L));
             this.unprocessedMsgCount++;
+            if (this.callBack != null) {
+                this.callBack.updateMessage(messageInfo, serverCode);
+            }
         }
         return this;
     }
@@ -102,6 +105,16 @@ public class ChatRoom {
      */
     public ChatRoom setUnprocessedMsgCount(int unprocessedMsgCount) {
         this.unprocessedMsgCount = unprocessedMsgCount;
+        return this;
+    }
+
+    /**
+     * 设置消息更新回调
+     *
+     * @param callBack 回调
+     */
+    public ChatRoom setUpdateMessageCallBack(UpdateMessageCallBack callBack) {
+        this.callBack = callBack;
         return this;
     }
 }

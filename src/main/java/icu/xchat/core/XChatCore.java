@@ -184,11 +184,14 @@ public class XChatCore {
          */
         public static void syncIdentity(String serverCode, ProgressCallBack progressCallBack) {
             try {
-                ServerManager
-                        .getServerByServerCode(serverCode)
-                        .addTask(
-                                new IdentitySyncTask(progressCallBack)
-                        );
+                Server server = ServerManager.getServerByServerCode(serverCode);
+                if (server == null) {
+                    progressCallBack.terminate("找不到服务器！");
+                    return;
+                }
+                server.addTask(
+                        new IdentitySyncTask(progressCallBack)
+                );
             } catch (TaskException e) {
                 progressCallBack.terminate(e.getMessage());
             }
@@ -202,11 +205,14 @@ public class XChatCore {
          */
         public static void syncRoom(String serverCode, ProgressCallBack progressCallBack) {
             try {
-                ServerManager
-                        .getServerByServerCode(serverCode)
-                        .addTask(
-                                new RoomSyncTask(progressCallBack)
-                        );
+                Server server = ServerManager.getServerByServerCode(serverCode);
+                if (server == null) {
+                    progressCallBack.terminate("找不到服务器！");
+                    return;
+                }
+                server.addTask(
+                        new RoomSyncTask(progressCallBack)
+                );
             } catch (TaskException e) {
                 progressCallBack.terminate(e.getMessage());
             }
@@ -220,11 +226,14 @@ public class XChatCore {
          */
         public static void syncUser(String serverCode, ProgressCallBack progressCallBack) {
             try {
-                ServerManager
-                        .getServerByServerCode(serverCode)
-                        .addTask(
-                                new UserSyncTask(progressCallBack)
-                        );
+                Server server = ServerManager.getServerByServerCode(serverCode);
+                if (server == null) {
+                    progressCallBack.terminate("找不到服务器！");
+                    return;
+                }
+                server.addTask(
+                        new UserSyncTask(progressCallBack)
+                );
             } catch (TaskException e) {
                 progressCallBack.terminate(e.getMessage());
             }
@@ -241,11 +250,14 @@ public class XChatCore {
          */
         public static void syncMessage(String serverCode, int rid, long time, int count, ProgressCallBack progressCallBack) {
             try {
-                ServerManager
-                        .getServerByServerCode(serverCode)
-                        .addTask(
-                                new MessageSyncTask(rid, time, count, progressCallBack)
-                        );
+                Server server = ServerManager.getServerByServerCode(serverCode);
+                if (server == null) {
+                    progressCallBack.terminate("找不到服务器！");
+                    return;
+                }
+                server.addTask(
+                        new MessageSyncTask(rid, time, count, progressCallBack)
+                );
             } catch (TaskException e) {
                 progressCallBack.terminate(e.getMessage());
             }
@@ -260,11 +272,14 @@ public class XChatCore {
          */
         public static void createRoom(String serverCode, ChatRoomInfo roomInfo, ProgressCallBack progressCallBack) {
             try {
-                ServerManager
-                        .getServerByServerCode(serverCode)
-                        .addTask(
-                                new PushTask(roomInfo, PushTask.TYPE_ROOM_INFO, PushTask.ACTION_CREATE, progressCallBack)
-                        );
+                Server server = ServerManager.getServerByServerCode(serverCode);
+                if (server == null) {
+                    progressCallBack.terminate("找不到服务器！");
+                    return;
+                }
+                server.addTask(
+                        new PushTask(roomInfo, PushTask.TYPE_ROOM_INFO, PushTask.ACTION_CREATE, progressCallBack)
+                );
             } catch (TaskException e) {
                 progressCallBack.terminate(e.getMessage());
             }
@@ -272,35 +287,23 @@ public class XChatCore {
     }
 
     /**
-     * 回调方法设置
+     * 回调设置
      */
     public static final class CallBack {
         /**
          * 服务器列表更新回调
-         *
-         * @param callback 回调
          */
-        public static void setUpdateOnlineServerListCallback(UpdateOnlineServerListCallback callback) {
-            ServerManager.setUpdateOnlineServerListCallback(callback);
-        }
+        public static UpdateOnlineServerListCallback updateOnlineServerListCallback;
 
         /**
          * 设置房间信息更新回调
-         *
-         * @param callBack 回调
          */
-        public static void setUpdateRoomInfoCallBack(UpdateRoomInfoCallBack callBack) {
-            ReceiveTask.setUpdateRoomInfoCallBack(callBack);
-        }
+        public static UpdateRoomInfoCallBack updateRoomInfoCallBack;
 
         /**
          * 设置用户信息更新回调
-         *
-         * @param callBack 回调
          */
-        public static void setUpdateUserInfoCallBack(UpdateUserInfoCallBack callBack) {
-            ReceiveTask.setUpdateUserInfoCallBack(callBack);
-        }
+        public static UpdateUserInfoCallBack updateUserInfoCallBack;
     }
 
     /**

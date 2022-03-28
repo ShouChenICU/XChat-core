@@ -1,7 +1,7 @@
 package icu.xchat.core.net;
 
+import icu.xchat.core.XChatCore;
 import icu.xchat.core.callbacks.interfaces.ProgressCallBack;
-import icu.xchat.core.callbacks.interfaces.UpdateOnlineServerListCallback;
 import icu.xchat.core.constants.TaskTypes;
 import icu.xchat.core.entities.ServerInfo;
 import icu.xchat.core.exceptions.TaskException;
@@ -19,7 +19,6 @@ import java.util.concurrent.TimeUnit;
 public final class ServerManager {
     private static final ScheduledThreadPoolExecutor TIMER_EXECUTOR;
     private static final Map<String, Server> onlineServersMap;
-    private static UpdateOnlineServerListCallback updateOnlineServerListCallback;
 
     static {
         TIMER_EXECUTOR = new ScheduledThreadPoolExecutor(1, r -> {
@@ -28,8 +27,6 @@ public final class ServerManager {
             return thread;
         });
         onlineServersMap = new HashMap<>();
-        updateOnlineServerListCallback = list -> {
-        };
     }
 
     /**
@@ -47,7 +44,7 @@ public final class ServerManager {
             Server server = new Server(serverInfo, progressCallBack);
             onlineServersMap.put(serverInfo.getServerCode(), server);
             heartTest(server);
-            updateOnlineServerListCallback.onlineServerListUpdate(getOnlineServersList());
+            updateOnlineServerListCallBack();
         }
     }
 
@@ -78,7 +75,7 @@ public final class ServerManager {
         synchronized (onlineServersMap) {
             if (onlineServersMap.containsKey(server.getServerInfo().getServerCode())) {
                 onlineServersMap.remove(server.getServerInfo().getServerCode());
-                updateOnlineServerListCallback.onlineServerListUpdate(getOnlineServersList());
+                updateOnlineServerListCallBack();
             } else {
                 isOnline = false;
             }
@@ -97,6 +94,12 @@ public final class ServerManager {
         }
     }
 
+    private static void updateOnlineServerListCallBack() {
+        if (XChatCore.CallBack.updateOnlineServerListCallback != null) {
+            XChatCore.CallBack.updateOnlineServerListCallback.updateOnlineServerList(getOnlineServersList());
+        }
+    }
+
     /**
      * 关闭一个Server
      *
@@ -107,7 +110,7 @@ public final class ServerManager {
         synchronized (onlineServersMap) {
             if (onlineServersMap.containsKey(serverCode)) {
                 server = onlineServersMap.remove(serverCode);
-                updateOnlineServerListCallback.onlineServerListUpdate(getOnlineServersList());
+                updateOnlineServerListCallBack();
             } else {
                 return false;
             }
@@ -168,14 +171,5 @@ public final class ServerManager {
                 iterator.remove();
             }
         }
-    }
-
-    /**
-     * 设置服务器列表更新回调
-     *
-     * @param updateOnlineServerListCallback 回调
-     */
-    public static void setUpdateOnlineServerListCallback(UpdateOnlineServerListCallback updateOnlineServerListCallback) {
-        ServerManager.updateOnlineServerListCallback = updateOnlineServerListCallback;
     }
 }

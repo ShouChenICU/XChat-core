@@ -1,8 +1,7 @@
 package icu.xchat.core.net.tasks;
 
 import icu.xchat.core.UserInfoManager;
-import icu.xchat.core.callbacks.interfaces.UpdateRoomInfoCallBack;
-import icu.xchat.core.callbacks.interfaces.UpdateUserInfoCallBack;
+import icu.xchat.core.XChatCore;
 import icu.xchat.core.entities.ChatRoom;
 import icu.xchat.core.entities.ChatRoomInfo;
 import icu.xchat.core.entities.MessageInfo;
@@ -20,17 +19,6 @@ import java.util.Objects;
  * @author shouchen
  */
 public class ReceiveTask extends AbstractTransmitTask {
-    private static UpdateRoomInfoCallBack updateRoomInfoCallBack;
-    private static UpdateUserInfoCallBack updateUserInfoCallBack;
-
-    public static void setUpdateRoomInfoCallBack(UpdateRoomInfoCallBack updateRoomInfoCallBack) {
-        ReceiveTask.updateRoomInfoCallBack = updateRoomInfoCallBack;
-    }
-
-    public static void setUpdateUserInfoCallBack(UpdateUserInfoCallBack updateUserInfoCallBack) {
-        ReceiveTask.updateUserInfoCallBack = updateUserInfoCallBack;
-    }
-
     public ReceiveTask() {
         super();
     }
@@ -67,7 +55,9 @@ public class ReceiveTask extends AbstractTransmitTask {
             if (Objects.equals(dataType, TYPE_ROOM_INFO)) {
                 ChatRoomInfo roomInfo = new ChatRoomInfo(dataContent);
                 server.updateRoomInfo(roomInfo);
-                updateRoomInfoCallBack.updateRoomInfo(roomInfo, server.getServerInfo().getServerCode());
+                if (XChatCore.CallBack.updateRoomInfoCallBack != null) {
+                    XChatCore.CallBack.updateRoomInfoCallBack.updateRoomInfo(roomInfo, server.getServerInfo().getServerCode());
+                }
             } else if (Objects.equals(dataType, TYPE_MSG_INFO)) {
                 MessageInfo messageInfo = new MessageInfo(dataContent);
                 ChatRoom chatRoom = server.getChatRoom(messageInfo.getRid());
@@ -85,7 +75,9 @@ public class ReceiveTask extends AbstractTransmitTask {
             } else if (Objects.equals(dataType, TYPE_USER_INFO)) {
                 UserInfo userInfo = new UserInfo(dataContent);
                 UserInfoManager.putUserInfo(userInfo);
-                updateUserInfoCallBack.updateUserInfo(userInfo);
+                if (XChatCore.CallBack.updateUserInfoCallBack != null) {
+                    XChatCore.CallBack.updateUserInfoCallBack.updateUserInfo(userInfo);
+                }
             }
             server.postPacket(new PacketBody()
                     .setTaskId(this.taskId)
