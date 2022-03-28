@@ -7,24 +7,23 @@ import org.bson.BasicBSONDecoder;
 import org.bson.BasicBSONEncoder;
 import org.bson.BasicBSONObject;
 
-import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.security.*;
-import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 import java.util.Map;
-import java.util.zip.DataFormatException;
 
 /**
  * 身份管理器
  *
  * @author shouchen
  */
+@SuppressWarnings("unused")
 public final class IdentityUtils {
     private IdentityUtils() {
     }
@@ -32,7 +31,7 @@ public final class IdentityUtils {
     /**
      * 生成一个新身份
      */
-    public static icu.xchat.core.Identity genIdentity(String keypairAlgorithm, int keySize) throws NoSuchAlgorithmException, SignatureException, InvalidKeyException {
+    public static icu.xchat.core.Identity genIdentity(String keypairAlgorithm, int keySize) throws Exception {
         KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance(keypairAlgorithm);
         keyPairGenerator.initialize(keySize, new SecureRandom());
         KeyPair keyPair = keyPairGenerator.generateKeyPair();
@@ -52,7 +51,7 @@ public final class IdentityUtils {
      * @return 身份
      */
     @SuppressWarnings("unchecked")
-    public static Identity parseIdentity(byte[] data, String password) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, DataFormatException, InvalidKeySpecException, InvalidAlgorithmParameterException {
+    public static Identity parseIdentity(byte[] data, String password) throws Exception {
         Cipher cipher = EncryptUtils.getDecryptCipher(EncryptUtils.genAesKey(password), EncryptUtils.genIV(password));
         data = cipher.doFinal(data);
         data = CompressionUtils.deCompress(data);
@@ -76,7 +75,7 @@ public final class IdentityUtils {
      * @param password 密码
      * @return 身份
      */
-    public static Identity parseIdentity(File file, String password) throws IOException, DataFormatException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeySpecException, InvalidKeyException, InvalidAlgorithmParameterException {
+    public static Identity parseIdentity(File file, String password) throws Exception {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         try (FileInputStream inputStream = new FileInputStream(file)) {
             int len;
@@ -95,7 +94,7 @@ public final class IdentityUtils {
      * @param password 密码
      * @return 字节数组
      */
-    public static byte[] encodeIdentity(Identity identity, String password) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException {
+    public static byte[] encodeIdentity(Identity identity, String password) throws Exception {
         BSONObject object = new BasicBSONObject();
         object.put("UID_CODE", identity.getUidCode());
         object.put("PUBLIC_KEY", identity.getPublicKey().getEncoded());
@@ -116,7 +115,7 @@ public final class IdentityUtils {
      * @param password  密码
      * @param storeFile 存储文件
      */
-    public static void storeIdentity(Identity identity, String password, File storeFile) throws NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException, IOException, InvalidAlgorithmParameterException {
+    public static void storeIdentity(Identity identity, String password, File storeFile) throws Exception {
         byte[] dat = encodeIdentity(identity, password);
         try (FileOutputStream outputStream = new FileOutputStream(storeFile)) {
             outputStream.write(dat);
@@ -130,7 +129,7 @@ public final class IdentityUtils {
      * @param publicKeyCode 公钥
      * @return 用户标识码
      */
-    public static String getUidCodeByPublicKeyCode(byte[] publicKeyCode) throws NoSuchAlgorithmException {
+    public static String getUidCodeByPublicKeyCode(byte[] publicKeyCode) throws Exception {
         byte[] digestCode;
         MessageDigest messageDigest = MessageDigest.getInstance("SHA-256");
         digestCode = messageDigest.digest(publicKeyCode);

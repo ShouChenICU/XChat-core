@@ -31,7 +31,7 @@ public class Server extends NetNode {
      * @param serverInfo            服务器信息实体对象
      * @param loginProgressCallBack 连接进度回调
      */
-    public Server(ServerInfo serverInfo, ProgressCallBack loginProgressCallBack) throws IOException, TaskException {
+    public Server(ServerInfo serverInfo, ProgressCallBack loginProgressCallBack) throws Exception {
         super(new InetSocketAddress(serverInfo.getHost(), serverInfo.getPort()), 1024);
         this.serverInfo = serverInfo;
         this.roomMap = new HashMap<>();

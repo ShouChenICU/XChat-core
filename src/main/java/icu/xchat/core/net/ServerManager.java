@@ -4,7 +4,6 @@ import icu.xchat.core.XChatCore;
 import icu.xchat.core.callbacks.interfaces.ProgressCallBack;
 import icu.xchat.core.constants.TaskTypes;
 import icu.xchat.core.entities.ServerInfo;
-import icu.xchat.core.exceptions.TaskException;
 
 import java.io.IOException;
 import java.util.*;
@@ -33,9 +32,9 @@ public final class ServerManager {
      * 尝试连接到一个服务器
      *
      * @param serverInfo 服务器信息
-     * @throws IOException 连接失败
+     * @throws Exception 连接失败
      */
-    public static void connectServer(ServerInfo serverInfo, ProgressCallBack progressCallBack) throws IOException, TaskException {
+    public static void connectServer(ServerInfo serverInfo, ProgressCallBack progressCallBack) throws Exception {
         synchronized (onlineServersMap) {
             if (onlineServersMap.containsKey(serverInfo.getServerCode())) {
                 progressCallBack.terminate("不可重复连接服务器！");

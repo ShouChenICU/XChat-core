@@ -2,13 +2,11 @@ package icu.xchat.core.utils;
 
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
-import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.security.*;
-import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 
@@ -17,6 +15,7 @@ import java.security.spec.X509EncodedKeySpec;
  *
  * @author shouchen
  */
+@SuppressWarnings("unused")
 public final class EncryptUtils {
     private static final int KEY_SIZE = 256;
     private static final int T_LEN = 128;
@@ -43,40 +42,40 @@ public final class EncryptUtils {
         return iv;
     }
 
-    public static SecretKey genAesKey(String password) throws NoSuchAlgorithmException {
+    public static SecretKey genAesKey(String password) throws Exception {
         return new SecretKeySpec(MessageDigest.getInstance("SHA-256").digest(password.getBytes(StandardCharsets.UTF_8)), ENCRYPT_KEY_ALGORITHM);
     }
 
-    public static Cipher getEncryptCipher(SecretKey encryptKey, byte[] iv) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, InvalidAlgorithmParameterException {
+    public static Cipher getEncryptCipher(SecretKey encryptKey, byte[] iv) throws Exception {
         Cipher cipher = Cipher.getInstance(ENCRYPT_ALGORITHM);
         cipher.init(Cipher.ENCRYPT_MODE, encryptKey, new GCMParameterSpec(T_LEN, iv));
         return cipher;
     }
 
-    public static Cipher getDecryptCipher(SecretKey decryptKey, byte[] iv) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, InvalidAlgorithmParameterException {
+    public static Cipher getDecryptCipher(SecretKey decryptKey, byte[] iv) throws Exception {
         Cipher cipher = Cipher.getInstance(ENCRYPT_ALGORITHM);
         cipher.init(Cipher.DECRYPT_MODE, decryptKey, new GCMParameterSpec(T_LEN, iv));
         return cipher;
     }
 
-    public static Cipher getEncryptCipher(String algorithm, PublicKey publicKey) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException {
-        Cipher cipher = Cipher.getInstance(algorithm);
+    public static Cipher getEncryptCipher(String algorithm, PublicKey publicKey) throws Exception {
+        Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
         cipher.init(Cipher.PUBLIC_KEY, publicKey);
         return cipher;
     }
 
-    public static Cipher getDecryptCipher(String algorithm, PrivateKey privateKey) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException {
-        Cipher cipher = Cipher.getInstance(algorithm);
+    public static Cipher getDecryptCipher(String algorithm, PrivateKey privateKey) throws Exception {
+        Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
         cipher.init(Cipher.PRIVATE_KEY, privateKey);
         return cipher;
     }
 
-    public static PublicKey getPublicKey(String algorithm, byte[] encode) throws NoSuchAlgorithmException, InvalidKeySpecException {
+    public static PublicKey getPublicKey(String algorithm, byte[] encode) throws Exception {
         KeyFactory keyFactory = KeyFactory.getInstance(algorithm);
         return keyFactory.generatePublic(new X509EncodedKeySpec(encode));
     }
 
-    public static PrivateKey getPrivateKey(String algorithm, byte[] encode) throws NoSuchAlgorithmException, InvalidKeySpecException {
+    public static PrivateKey getPrivateKey(String algorithm, byte[] encode) throws Exception {
         KeyFactory keyFactory = KeyFactory.getInstance(algorithm);
         return keyFactory.generatePrivate(new PKCS8EncodedKeySpec(encode));
     }

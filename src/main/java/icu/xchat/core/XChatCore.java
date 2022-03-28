@@ -10,15 +10,12 @@ import icu.xchat.core.entities.ChatRoomInfo;
 import icu.xchat.core.entities.MessageInfo;
 import icu.xchat.core.entities.ServerInfo;
 import icu.xchat.core.exceptions.IdentityLoadException;
-import icu.xchat.core.exceptions.TaskException;
 import icu.xchat.core.net.Server;
 import icu.xchat.core.net.ServerManager;
 import icu.xchat.core.net.WorkerThreadPool;
 import icu.xchat.core.net.tasks.*;
 import icu.xchat.core.utils.SignatureUtils;
 
-import java.io.IOException;
-import java.security.SignatureException;
 import java.util.List;
 
 /**
@@ -104,6 +101,10 @@ public class XChatCore {
                 callBack.terminate("找不到服务器！");
                 return;
             }
+            if (msg.length() > 1024) {
+                callBack.terminate("消息长度超限！");
+                return;
+            }
             server.addTask(new PushTask(
                     SignatureUtils.signMsg(
                             new MessageInfo()
@@ -115,7 +116,7 @@ public class XChatCore {
                     PushTask.TYPE_MSG_INFO,
                     PushTask.ACTION_CREATE,
                     callBack));
-        } catch (TaskException | SignatureException e) {
+        } catch (Exception e) {
             callBack.terminate(e.getMessage());
         }
     }
@@ -133,8 +134,8 @@ public class XChatCore {
             WorkerThreadPool.execute(() -> {
                 try {
                     ServerManager.connectServer(serverInfo, progressCallBack);
-                } catch (IOException | TaskException e) {
-                    progressCallBack.terminate(e.getMessage());
+                } catch (Exception e) {
+                    progressCallBack.terminate(e.getMessage() == null ? e.toString() : e.getMessage());
                 }
             });
         }
@@ -192,7 +193,7 @@ public class XChatCore {
                 server.addTask(
                         new IdentitySyncTask(progressCallBack)
                 );
-            } catch (TaskException e) {
+            } catch (Exception e) {
                 progressCallBack.terminate(e.getMessage());
             }
         }
@@ -213,7 +214,7 @@ public class XChatCore {
                 server.addTask(
                         new RoomSyncTask(progressCallBack)
                 );
-            } catch (TaskException e) {
+            } catch (Exception e) {
                 progressCallBack.terminate(e.getMessage());
             }
         }
@@ -234,7 +235,7 @@ public class XChatCore {
                 server.addTask(
                         new UserSyncTask(progressCallBack)
                 );
-            } catch (TaskException e) {
+            } catch (Exception e) {
                 progressCallBack.terminate(e.getMessage());
             }
         }
@@ -258,7 +259,7 @@ public class XChatCore {
                 server.addTask(
                         new MessageSyncTask(rid, time, count, progressCallBack)
                 );
-            } catch (TaskException e) {
+            } catch (Exception e) {
                 progressCallBack.terminate(e.getMessage());
             }
         }
@@ -280,7 +281,7 @@ public class XChatCore {
                 server.addTask(
                         new PushTask(roomInfo, PushTask.TYPE_ROOM_INFO, PushTask.ACTION_CREATE, progressCallBack)
                 );
-            } catch (TaskException e) {
+            } catch (Exception e) {
                 progressCallBack.terminate(e.getMessage());
             }
         }

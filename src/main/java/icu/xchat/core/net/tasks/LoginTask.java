@@ -6,7 +6,6 @@ import icu.xchat.core.callbacks.interfaces.ProgressCallBack;
 import icu.xchat.core.constants.KeyPairAlgorithms;
 import icu.xchat.core.constants.TaskTypes;
 import icu.xchat.core.net.PacketBody;
-import icu.xchat.core.net.WorkerThreadPool;
 import icu.xchat.core.utils.BsonUtils;
 import icu.xchat.core.utils.EncryptUtils;
 import org.bson.BSONObject;
@@ -38,59 +37,55 @@ public class LoginTask extends AbstractTask {
     @Override
     public void handlePacket(PacketBody packetBody) throws Exception {
         byte[] data = packetBody.getData();
-        switch (packetBody.getId()) {
-            case 0:
-                this.progressCallBack.updateProgress(0.25);
-                /*
-                 * 获取并验证服务器公钥
-                 */
-                byte[] digest = MessageDigest.getInstance("SHA-256").digest(data);
-                byte[] tmp = new byte[12];
-                System.arraycopy(digest, 0, tmp, 0, tmp.length);
-                if (!Objects.equals(server.getServerInfo().getServerCode(), Base64.getEncoder().encodeToString(tmp))) {
-                    terminate("服务器信息验证失败");
-                    throw new LoginException("服务器信息验证失败");
-                }
-                PublicKey publicKey = EncryptUtils.getPublicKey(KeyPairAlgorithms.RSA, data);
-                server.getPackageUtils().setEncryptCipher(EncryptUtils.getEncryptCipher(KeyPairAlgorithms.RSA, publicKey));
-                /*
-                 * 生成对称密钥
-                 */
-                BSONObject object = new BasicBSONObject();
-                SecretKey aesKey = EncryptUtils.genAesKey();
-                object.put("KEY", aesKey.getEncoded());
-                byte[] decryptIV = EncryptUtils.genIV();
-                object.put("ENCRYPT_IV", decryptIV);
-                byte[] encryptIV = EncryptUtils.genIV();
-                object.put("DECRYPT_IV", encryptIV);
-                server.postPacket(new PacketBody()
-                        .setId(1)
-                        .setTaskId(this.taskId)
-                        .setData(BsonUtils.encode(object)));
-                server.getPackageUtils().initCrypto(aesKey, encryptIV, decryptIV);
-                break;
-            case 1:
-                this.progressCallBack.updateProgress(0.5);
-                /*
-                 * 发送自己的公钥
-                 */
-                WorkerThreadPool.execute(() -> server.postPacket(new PacketBody()
-                        .setTaskId(this.taskId)
-                        .setId(2)
-                        .setData(XChatCore.getIdentity().getPublicKey().getEncoded())));
-                break;
-            case 2:
-                this.progressCallBack.updateProgress(0.75);
-                Cipher cipher = EncryptUtils.getDecryptCipher(KeyPairAlgorithms.RSA, XChatCore.getIdentity().getPrivateKey());
-                byte[] dat = cipher.doFinal(data);
-                WorkerThreadPool.execute(() -> server.postPacket(new PacketBody()
-                        .setTaskId(this.taskId)
-                        .setId(3)
-                        .setData(dat)));
-                break;
-            case 3:
-                done();
-                break;
+        if (Objects.equals(packetBody.getId(), 0)) {
+            this.progressCallBack.updateProgress(0.25);
+            /*
+             * 获取并验证服务器公钥
+             */
+            byte[] digest = MessageDigest.getInstance("SHA-256").digest(data);
+            byte[] tmp = new byte[12];
+            System.arraycopy(digest, 0, tmp, 0, tmp.length);
+            if (!Objects.equals(server.getServerInfo().getServerCode(), Base64.getEncoder().encodeToString(tmp))) {
+                terminate("服务器信息验证失败");
+                throw new LoginException("服务器信息验证失败");
+            }
+            PublicKey publicKey = EncryptUtils.getPublicKey(KeyPairAlgorithms.RSA, data);
+            server.getPackageUtils().setEncryptCipher(EncryptUtils.getEncryptCipher(KeyPairAlgorithms.RSA, publicKey));
+            /*
+             * 生成对称密钥
+             */
+            BSONObject object = new BasicBSONObject();
+            SecretKey aesKey = EncryptUtils.genAesKey();
+            object.put("KEY", aesKey.getEncoded());
+            byte[] decryptIV = EncryptUtils.genIV();
+            object.put("ENCRYPT_IV", decryptIV);
+            byte[] encryptIV = EncryptUtils.genIV();
+            object.put("DECRYPT_IV", encryptIV);
+            server.postPacket(new PacketBody()
+                    .setId(1)
+                    .setTaskId(this.taskId)
+                    .setData(BsonUtils.encode(object)));
+            server.getPackageUtils().initCrypto(aesKey, encryptIV, decryptIV);
+            this.progressCallBack.updateProgress(0.35);
+        } else if (Objects.equals(packetBody.getId(), 1)) {
+            this.progressCallBack.updateProgress(0.5);
+            /*
+             * 发送自己的公钥
+             */
+            server.postPacket(new PacketBody()
+                    .setTaskId(this.taskId)
+                    .setId(2)
+                    .setData(XChatCore.getIdentity().getPublicKey().getEncoded()));
+        } else if (Objects.equals(packetBody.getId(), 2)) {
+            this.progressCallBack.updateProgress(0.75);
+            Cipher cipher = EncryptUtils.getDecryptCipher(KeyPairAlgorithms.RSA, XChatCore.getIdentity().getPrivateKey());
+            byte[] dat = cipher.doFinal(data);
+            server.postPacket(new PacketBody()
+                    .setTaskId(this.taskId)
+                    .setId(3)
+                    .setData(dat));
+        } else {
+            done();
         }
     }
 

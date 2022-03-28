@@ -17,7 +17,7 @@ public class ChatRoom {
     private final List<MessageInfo> messageList;
     private ChatRoomInfo roomInfo;
     private int unprocessedMsgCount;
-    private UpdateMessageCallBack callBack;
+    private UpdateMessageCallBack updateMessageCallBack;
 
     public ChatRoom(ChatRoomInfo roomInfo, String serverCode) {
         this.roomInfo = roomInfo;
@@ -73,8 +73,8 @@ public class ChatRoom {
             this.messageList.add(messageInfo);
             this.messageList.sort((a, b) -> Long.compare(a.getTimeStamp() - b.getTimeStamp(), 0L));
             this.unprocessedMsgCount++;
-            if (this.callBack != null) {
-                this.callBack.updateMessage(messageInfo, serverCode);
+            if (this.updateMessageCallBack != null) {
+                this.updateMessageCallBack.updateMessage(messageInfo);
             }
         }
         return this;
@@ -87,6 +87,19 @@ public class ChatRoom {
      */
     public List<MessageInfo> getMessageList() {
         return Collections.unmodifiableList(messageList);
+    }
+
+    /**
+     * 获取最新消息
+     *
+     * @return 最新消息
+     */
+    public MessageInfo getLastMessage() {
+        if (messageList.isEmpty()) {
+            return null;
+        } else {
+            return messageList.get(messageList.size() - 1);
+        }
     }
 
     /**
@@ -114,7 +127,16 @@ public class ChatRoom {
      * @param callBack 回调
      */
     public ChatRoom setUpdateMessageCallBack(UpdateMessageCallBack callBack) {
-        this.callBack = callBack;
+        this.updateMessageCallBack = callBack;
         return this;
+    }
+
+    /**
+     * 获取消息更新回调
+     *
+     * @return 回调
+     */
+    public UpdateMessageCallBack getUpdateMessageCallBack() {
+        return updateMessageCallBack;
     }
 }
