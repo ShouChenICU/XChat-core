@@ -156,6 +156,16 @@ public class XChatCore {
         }
 
         /**
+         * 测试服务器是否在线
+         *
+         * @param serverCode 服务器识别码
+         * @return 在线状态
+         */
+        public static boolean isOnline(String serverCode) {
+            return ServerManager.isOnline(serverCode);
+        }
+
+        /**
          * 获取在线服务器信息列表
          *
          * @return 在线服务器信息列表

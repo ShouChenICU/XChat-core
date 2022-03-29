@@ -2,9 +2,7 @@ package icu.xchat.core.entities;
 
 import icu.xchat.core.callbacks.interfaces.UpdateMessageCallBack;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * 聊天室
@@ -15,6 +13,7 @@ import java.util.List;
 public class ChatRoom {
     private final String serverCode;
     private final List<MessageInfo> messageList;
+    private final Set<Integer> messageSet;
     private ChatRoomInfo roomInfo;
     private int unprocessedMsgCount;
     private UpdateMessageCallBack updateMessageCallBack;
@@ -23,6 +22,7 @@ public class ChatRoom {
         this.roomInfo = roomInfo;
         this.serverCode = serverCode;
         this.messageList = new ArrayList<>();
+        this.messageSet = new HashSet<>();
         this.unprocessedMsgCount = 0;
     }
 
@@ -70,11 +70,13 @@ public class ChatRoom {
      */
     public ChatRoom pushMessage(MessageInfo messageInfo) {
         synchronized (this.messageList) {
-            this.messageList.add(messageInfo);
-            this.messageList.sort((a, b) -> Long.compare(a.getTimeStamp() - b.getTimeStamp(), 0L));
-            this.unprocessedMsgCount++;
-            if (this.updateMessageCallBack != null) {
-                this.updateMessageCallBack.updateMessage(messageInfo);
+            if (messageSet.add(messageInfo.getId())) {
+                this.messageList.add(messageInfo);
+                this.messageList.sort((a, b) -> Long.compare(a.getTimeStamp() - b.getTimeStamp(), 0L));
+                this.unprocessedMsgCount++;
+                if (this.updateMessageCallBack != null) {
+                    this.updateMessageCallBack.updateMessage(messageInfo);
+                }
             }
         }
         return this;

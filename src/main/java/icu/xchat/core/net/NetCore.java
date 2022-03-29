@@ -34,7 +34,7 @@ public class NetCore {
         Set<SelectionKey> selectedKeys = mainSelector.selectedKeys();
         while (true) {
             try {
-                mainSelector.select(256);
+                mainSelector.select(128);
             } catch (IOException e) {
                 e.printStackTrace();
                 return;

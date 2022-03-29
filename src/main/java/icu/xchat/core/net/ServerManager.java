@@ -6,7 +6,10 @@ import icu.xchat.core.constants.TaskTypes;
 import icu.xchat.core.entities.ServerInfo;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -143,6 +146,16 @@ public final class ServerManager {
     }
 
     /**
+     * 测试服务器是否在线
+     *
+     * @param serverCode 服务器识别码
+     * @return 在线状态
+     */
+    public static boolean isOnline(String serverCode) {
+        return onlineServersMap.containsKey(serverCode);
+    }
+
+    /**
      * 获取服务器实体
      *
      * @param serverCode 服务器标识码
@@ -154,9 +167,8 @@ public final class ServerManager {
 
     public static void closeAll() {
         synchronized (onlineServersMap) {
-            Iterator<Map.Entry<String, Server>> iterator = onlineServersMap.entrySet().iterator();
-            while (iterator.hasNext()) {
-                Server server = iterator.next().getValue();
+            for (Map.Entry<String, Server> entry : onlineServersMap.entrySet()) {
+                Server server = entry.getValue();
                 server.getSelectionKey().cancel();
                 NetCore.wakeup();
                 server.postPacket(new PacketBody()
@@ -167,8 +179,8 @@ public final class ServerManager {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                iterator.remove();
             }
+            onlineServersMap.clear();
         }
     }
 }
