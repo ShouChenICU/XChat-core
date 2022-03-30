@@ -7,6 +7,7 @@ import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * 网络核心
@@ -14,13 +15,14 @@ import java.util.Set;
  * @author shouchen
  */
 public class NetCore {
+    private static final ReentrantLock REG_LOCK = new ReentrantLock();
     private static Selector mainSelector;
 
     static {
         try {
             mainSelector = Selector.open();
             Thread thread = new Thread(NetCore::mainLoop);
-            thread.setDaemon(true);
+            thread.setDaemon(false);
             thread.start();
         } catch (Exception e) {
             e.printStackTrace();
@@ -34,7 +36,9 @@ public class NetCore {
         Set<SelectionKey> selectedKeys = mainSelector.selectedKeys();
         while (true) {
             try {
-                mainSelector.select(128);
+                mainSelector.select();
+                REG_LOCK.lock();
+                REG_LOCK.unlock();
             } catch (IOException e) {
                 e.printStackTrace();
                 return;
@@ -57,8 +61,12 @@ public class NetCore {
     }
 
     public static SelectionKey register(SocketChannel channel, int ops, NetNode netNode) throws ClosedChannelException {
-        SelectionKey selectionKey = channel.register(mainSelector, ops, netNode);
-        mainSelector.wakeup();
-        return selectionKey;
+        REG_LOCK.lock();
+        try {
+            mainSelector.wakeup();
+            return channel.register(mainSelector, ops, netNode);
+        } finally {
+            REG_LOCK.unlock();
+        }
     }
 }
