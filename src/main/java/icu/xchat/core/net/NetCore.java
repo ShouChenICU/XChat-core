@@ -45,7 +45,7 @@ public class NetCore {
                 keyIterator.remove();
                 if (key.isReadable()) {
                     Server server = (Server) key.attachment();
-                    key.cancel();
+                    key.interestOps(0);
                     WorkerThreadPool.execute(server::doRead);
                 }
             }

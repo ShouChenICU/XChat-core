@@ -17,7 +17,7 @@ import java.util.concurrent.TimeoutException;
  */
 public abstract class NetNode {
     private final SocketChannel channel;
-    private SelectionKey selectionKey;
+    private final SelectionKey selectionKey;
     private final ByteBuffer readBuffer;
     private final ByteBuffer writeBuffer;
     private final PackageUtils packageUtils;
@@ -89,7 +89,8 @@ public abstract class NetNode {
             }
             readBuffer.clear();
         }
-        selectionKey = NetCore.register(channel, SelectionKey.OP_READ, this);
+        selectionKey.interestOps(SelectionKey.OP_READ);
+        NetCore.wakeup();
     }
 
     /**
