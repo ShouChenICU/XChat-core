@@ -35,7 +35,7 @@ public final class IdentityUtils {
         KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance(keypairAlgorithm);
         keyPairGenerator.initialize(keySize, new SecureRandom());
         KeyPair keyPair = keyPairGenerator.generateKeyPair();
-        String uidCode = getUidCodeByPublicKeyCode(keyPair.getPublic().getEncoded());
+        String uidCode = getCodeByPublicKeyCode(keyPair.getPublic().getEncoded());
         return new Identity()
                 .setUidCode(uidCode)
                 .setPublicKey(keyPair.getPublic())
@@ -124,12 +124,12 @@ public final class IdentityUtils {
     }
 
     /**
-     * 从公钥计算用户标识码
+     * 从公钥计算标识码
      *
      * @param publicKeyCode 公钥
-     * @return 用户标识码
+     * @return 标识码
      */
-    public static String getUidCodeByPublicKeyCode(byte[] publicKeyCode) throws Exception {
+    public static String getCodeByPublicKeyCode(byte[] publicKeyCode) throws Exception {
         byte[] digestCode;
         MessageDigest messageDigest = MessageDigest.getInstance("SHA-256");
         digestCode = messageDigest.digest(publicKeyCode);

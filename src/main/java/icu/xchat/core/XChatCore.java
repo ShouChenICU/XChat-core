@@ -17,6 +17,7 @@ import icu.xchat.core.net.tasks.*;
 import icu.xchat.core.utils.SignatureUtils;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * XChat客户端核心
@@ -81,7 +82,7 @@ public class XChatCore {
      */
     public static synchronized void logout() {
         if (XChatCore.identity != null) {
-            ServerManager.closeAll();
+            // TODO: 2022/4/2
             XChatCore.identity = null;
         }
     }
@@ -96,9 +97,9 @@ public class XChatCore {
      */
     public static void pushMessage(String msg, String serverCode, int rid, ProgressCallBack callBack) {
         try {
-            Server server = ServerManager.getServerByServerCode(serverCode);
+            Server server = ServerManager.getServerByCode(serverCode);
             if (server == null) {
-                callBack.terminate("找不到服务器！");
+                callBack.terminate("Server not found");
                 return;
             }
             if (msg.length() > 1024) {
@@ -130,28 +131,32 @@ public class XChatCore {
          *
          * @param serverInfo 服务器信息
          */
-        public static void attemptConnectServer(ServerInfo serverInfo, ProgressCallBack progressCallBack) {
-            WorkerThreadPool.execute(() -> {
-                try {
-                    ServerManager.connectServer(serverInfo, progressCallBack);
-                } catch (Exception e) {
-                    progressCallBack.terminate(e.getMessage() == null ? e.toString() : e.getMessage());
-                }
-            });
+        public static void attemptConnectServer(ServerInfo serverInfo, ProgressCallBack callBack) {
+            try {
+                Server server = ServerManager.loadServer(serverInfo);
+                server.connect(callBack);
+            } catch (Exception e) {
+                callBack.terminate(Objects.requireNonNullElse(e.getMessage(), e.toString()));
+            }
         }
 
         /**
          * 断开一个服务器连接
          *
-         * @param serverCode       服务器标识码
-         * @param progressCallBack 进度回调
+         * @param serverCode 服务器标识码
+         * @param callBack   进度回调
          */
-        public static void disconnectServer(String serverCode, ProgressCallBack progressCallBack) {
-            progressCallBack.startProgress();
-            if (ServerManager.closeServer(serverCode)) {
-                progressCallBack.completeProgress();
-            } else {
-                progressCallBack.terminate("找不到该服务器！");
+        public static void disconnectServer(String serverCode, ProgressCallBack callBack) {
+            callBack.startProgress();
+            Server server = ServerManager.getServerByCode(serverCode);
+            if (server == null) {
+                callBack.terminate("Server not found");
+                return;
+            }
+            try {
+                server.disconnect();
+            } catch (Exception e) {
+                callBack.terminate(Objects.requireNonNullElse(e.getMessage(), e.toString()));
             }
         }
 
@@ -162,16 +167,17 @@ public class XChatCore {
          * @return 在线状态
          */
         public static boolean isOnline(String serverCode) {
-            return ServerManager.isOnline(serverCode);
+            Server server = ServerManager.getServerByCode(serverCode);
+            return server != null && server.isConnect();
         }
 
         /**
-         * 获取在线服务器信息列表
+         * 获取已加载的服务器列表
          *
-         * @return 在线服务器信息列表
+         * @return 服务器列表
          */
-        public static List<ServerInfo> getOnlineServersList() {
-            return ServerManager.getOnlineServersList();
+        public static List<Server> getServerList() {
+            return ServerManager.getServerList();
         }
 
         /**
@@ -180,8 +186,8 @@ public class XChatCore {
          * @param serverCode 服务器识别码
          * @return 服务器实体
          */
-        public static icu.xchat.core.net.Server getServer(String serverCode) {
-            return ServerManager.getServerByServerCode(serverCode);
+        public static Server getServer(String serverCode) {
+            return ServerManager.getServerByCode(serverCode);
         }
     }
 
@@ -190,109 +196,105 @@ public class XChatCore {
         /**
          * 同步身份
          *
-         * @param serverCode       服务器标识码
-         * @param progressCallBack 进度回调
+         * @param serverCode 服务器标识码
+         * @param callBack   进度回调
          */
-        public static void syncIdentity(String serverCode, ProgressCallBack progressCallBack) {
+        public static void syncIdentity(String serverCode, ProgressCallBack callBack) {
             try {
-                Server server = ServerManager.getServerByServerCode(serverCode);
+                Server server = ServerManager.getServerByCode(serverCode);
                 if (server == null) {
-                    progressCallBack.terminate("找不到服务器！");
+                    callBack.terminate("Server not found");
                     return;
                 }
                 server.addTask(
-                        new IdentitySyncTask(progressCallBack)
+                        new IdentitySyncTask(callBack)
                 );
             } catch (Exception e) {
-                progressCallBack.terminate(e.getMessage());
+                callBack.terminate(Objects.requireNonNullElse(e.getMessage(), e.toString()));
             }
         }
 
         /**
          * 同步房间
          *
-         * @param serverCode       服务器标识码
-         * @param progressCallBack 进度回调
+         * @param serverCode 服务器标识码
+         * @param callBack   进度回调
          */
-        public static void syncRoom(String serverCode, ProgressCallBack progressCallBack) {
+        public static void syncRoom(String serverCode, ProgressCallBack callBack) {
             try {
-                Server server = ServerManager.getServerByServerCode(serverCode);
+                Server server = ServerManager.getServerByCode(serverCode);
                 if (server == null) {
-                    progressCallBack.terminate("找不到服务器！");
+                    callBack.terminate("Server not found");
                     return;
                 }
                 server.addTask(
-                        new RoomSyncTask(progressCallBack)
+                        new RoomSyncTask(callBack)
                 );
             } catch (Exception e) {
-                progressCallBack.terminate(e.getMessage());
+                callBack.terminate(Objects.requireNonNullElse(e.getMessage(), e.toString()));
             }
         }
 
         /**
          * 同步用户信息
          *
-         * @param serverCode       服务器识别码
-         * @param progressCallBack 进度回调
+         * @param serverCode 服务器识别码
+         * @param callBack   进度回调
          */
-        public static void syncUser(String serverCode, ProgressCallBack progressCallBack) {
+        public static void syncUser(String serverCode, ProgressCallBack callBack) {
             try {
-                Server server = ServerManager.getServerByServerCode(serverCode);
+                Server server = ServerManager.getServerByCode(serverCode);
                 if (server == null) {
-                    progressCallBack.terminate("找不到服务器！");
+                    callBack.terminate("Server not found");
                     return;
                 }
-                server.addTask(
-                        new UserSyncTask(progressCallBack)
-                );
+                server.addTask(new UserSyncTask(callBack));
             } catch (Exception e) {
-                progressCallBack.terminate(e.getMessage());
+                callBack.terminate(Objects.requireNonNullElse(e.getMessage(), e.toString()));
             }
         }
 
         /**
          * 同步指定时间戳之前指定数量的消息
          *
-         * @param serverCode       服务器识别码
-         * @param rid              房间id
-         * @param time             时间戳
-         * @param count            数量
-         * @param progressCallBack 进度回调
+         * @param serverCode 服务器识别码
+         * @param rid        房间id
+         * @param time       时间戳
+         * @param count      数量
+         * @param callBack   进度回调
          */
-        public static void syncMessage(String serverCode, int rid, long time, int count, ProgressCallBack progressCallBack) {
+        public static void syncMessage(String serverCode, int rid, long time, int count, ProgressCallBack callBack) {
             try {
-                Server server = ServerManager.getServerByServerCode(serverCode);
+                Server server = ServerManager.getServerByCode(serverCode);
                 if (server == null) {
-                    progressCallBack.terminate("找不到服务器！");
+                    callBack.terminate("Server not found");
                     return;
                 }
                 server.addTask(
-                        new MessageSyncTask(rid, time, count, progressCallBack)
+                        new MessageSyncTask(rid, time, count, callBack)
                 );
             } catch (Exception e) {
-                progressCallBack.terminate(e.getMessage());
+                callBack.terminate(Objects.requireNonNullElse(e.getMessage(), e.toString()));
             }
         }
 
         /**
          * 创建一个房间
          *
-         * @param serverCode       服务器识别码
-         * @param roomInfo         房间信息
-         * @param progressCallBack 进度回调
+         * @param serverCode 服务器识别码
+         * @param roomInfo   房间信息
+         * @param callBack   进度回调
          */
-        public static void createRoom(String serverCode, ChatRoomInfo roomInfo, ProgressCallBack progressCallBack) {
+        public static void createRoom(String serverCode, ChatRoomInfo roomInfo, ProgressCallBack callBack) {
             try {
-                Server server = ServerManager.getServerByServerCode(serverCode);
+                Server server = ServerManager.getServerByCode(serverCode);
                 if (server == null) {
-                    progressCallBack.terminate("找不到服务器！");
+                    callBack.terminate("Server not found");
                     return;
                 }
-                server.addTask(
-                        new PushTask(roomInfo, PushTask.TYPE_ROOM_INFO, PushTask.ACTION_CREATE, progressCallBack)
-                );
+                server.addTask(new PushTask(roomInfo, PushTask.TYPE_ROOM_INFO, PushTask.ACTION_CREATE, callBack));
             } catch (Exception e) {
-                progressCallBack.terminate(e.getMessage());
+                callBack.terminate(Objects.requireNonNullElse(e.getMessage(), e.toString()));
             }
         }
     }

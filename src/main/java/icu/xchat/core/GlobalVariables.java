@@ -30,5 +30,5 @@ public final class GlobalVariables {
     /**
      * 通讯协议版本
      */
-    public static final Integer PROTOCOL_VERSION = 1;
+    public static final Integer PROTOCOL_VERSION = 2;
 }

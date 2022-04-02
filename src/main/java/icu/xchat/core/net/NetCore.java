@@ -7,7 +7,8 @@ import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.util.Iterator;
 import java.util.Set;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * 网络核心
@@ -15,10 +16,11 @@ import java.util.concurrent.locks.ReentrantLock;
  * @author shouchen
  */
 public class NetCore {
-    private static final ReentrantLock REG_LOCK = new ReentrantLock();
+    private static final ReadWriteLock READ_WRITE_LOCK;
     private static Selector mainSelector;
 
     static {
+        READ_WRITE_LOCK = new ReentrantReadWriteLock();
         try {
             mainSelector = Selector.open();
             Thread thread = new Thread(NetCore::mainLoop);
@@ -37,36 +39,42 @@ public class NetCore {
         while (true) {
             try {
                 mainSelector.select();
-                REG_LOCK.lock();
-                REG_LOCK.unlock();
             } catch (IOException e) {
                 e.printStackTrace();
                 return;
             }
-            Iterator<SelectionKey> keyIterator = selectedKeys.iterator();
-            while (keyIterator.hasNext()) {
-                SelectionKey key = keyIterator.next();
-                keyIterator.remove();
-                if (key.isReadable()) {
-                    Server server = (Server) key.attachment();
-                    key.interestOps(0);
-                    WorkerThreadPool.execute(server::doRead);
+            READ_WRITE_LOCK.readLock().lock();
+            try {
+                Iterator<SelectionKey> keyIterator = selectedKeys.iterator();
+                while (keyIterator.hasNext()) {
+                    SelectionKey key = keyIterator.next();
+                    keyIterator.remove();
+                    if (key.isReadable()) {
+                        AbstractNetIO netIO = (AbstractNetIO) key.attachment();
+                        key.interestOps(0);
+                        WorkerThreadPool.execute(() -> {
+                            try {
+                                netIO.doRead();
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                netIO.exceptionHandler(e);
+                            }
+                        });
+                    }
                 }
+            } finally {
+                READ_WRITE_LOCK.readLock().unlock();
             }
         }
     }
 
-    public static void wakeup() {
-        mainSelector.wakeup();
-    }
-
-    public static SelectionKey register(SocketChannel channel, int ops, NetNode netNode) throws ClosedChannelException {
-        REG_LOCK.lock();
+    public static SelectionKey register(SocketChannel channel, int ops, AbstractNetIO netIO) throws ClosedChannelException {
+        READ_WRITE_LOCK.writeLock().lock();
         try {
             mainSelector.wakeup();
-            return channel.register(mainSelector, ops, netNode);
+            return channel.register(mainSelector, ops, netIO);
         } finally {
-            REG_LOCK.unlock();
+            READ_WRITE_LOCK.writeLock().unlock();
         }
     }
 }

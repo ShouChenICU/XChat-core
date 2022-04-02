@@ -6,42 +6,83 @@ import icu.xchat.core.entities.ChatRoom;
 import icu.xchat.core.entities.ChatRoomInfo;
 import icu.xchat.core.entities.ServerInfo;
 import icu.xchat.core.exceptions.TaskException;
-import icu.xchat.core.net.tasks.*;
+import icu.xchat.core.net.tasks.AbstractTask;
+import icu.xchat.core.net.tasks.CommandTask;
+import icu.xchat.core.net.tasks.ReceiveTask;
+import icu.xchat.core.net.tasks.Task;
 
-import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * 服务器连接实体类
+ * 服务器实体类
  *
  * @author shouchen
  */
-public class Server extends NetNode {
+public abstract class Server extends NetNode {
     private final Map<Integer, ChatRoom> roomMap;
     private final ConcurrentHashMap<Integer, Task> taskMap;
-    private final ServerInfo serverInfo;
+    private ConnectBootstrap connectBootstrap;
     private int taskId;
+
+    public abstract ServerInfo getServerInfo();
 
     /**
      * 初始化
-     *
-     * @param serverInfo            服务器信息实体对象
-     * @param loginProgressCallBack 连接进度回调
      */
-    public Server(ServerInfo serverInfo, ProgressCallBack loginProgressCallBack) throws Exception {
-        super(new InetSocketAddress(serverInfo.getHost(), serverInfo.getPort()), 1024);
-        this.serverInfo = serverInfo;
+    public Server() {
         this.roomMap = new HashMap<>();
         this.taskMap = new ConcurrentHashMap<>();
         this.taskId = 1;
-        addTask(new LoginTask(loginProgressCallBack));
     }
 
-    public ServerInfo getServerInfo() {
-        return serverInfo;
+    /**
+     * 尝试连接
+     *
+     * @param callBack 回调
+     */
+    public void connect(ProgressCallBack callBack) {
+        synchronized (this) {
+            if (isConnect()) {
+                callBack.completeProgress();
+                return;
+            }
+            if (connectBootstrap == null) {
+                callBack.startProgress();
+                try {
+                    connectBootstrap = new ConnectBootstrap(this) {
+                        @Override
+                        protected void complete() {
+                            callBack.completeProgress();
+                        }
+
+                        @Override
+                        protected void exceptionHandler(Exception exception) {
+                            connectBootstrap = null;
+                            callBack.terminate(exception.getMessage());
+                        }
+                    };
+                } catch (Exception e) {
+                    callBack.terminate(e.toString());
+                }
+            } else {
+                callBack.terminate("is connecting...");
+            }
+        }
+    }
+
+    @Override
+    public void update(AbstractNetIO abstractNetIO) {
+        synchronized (this) {
+            if (!isConnect()) {
+                super.update(abstractNetIO);
+                this.connectBootstrap = null;
+                DispatchCenter.heartTest(this);
+            }
+        }
     }
 
     /**
@@ -50,7 +91,7 @@ public class Server extends NetNode {
      * @param packetBody 包
      */
     @Override
-    protected void handlePacket(PacketBody packetBody) throws Exception {
+    protected void packageHandler(PacketBody packetBody) throws Exception {
         if (packetBody.getTaskId() != 0) {
             Task task = taskMap.get(packetBody.getTaskId());
             if (task == null) {
@@ -80,22 +121,12 @@ public class Server extends NetNode {
     }
 
     @Override
-    public void postPacket(PacketBody packetBody) {
+    protected void exceptionHandler(Exception exception) {
+        exception.printStackTrace();
         try {
-            super.postPacket(packetBody);
+            disconnect();
         } catch (Exception e) {
             e.printStackTrace();
-            ServerManager.closeServer(this);
-        }
-    }
-
-    @Override
-    public void doRead() {
-        try {
-            super.doRead();
-        } catch (Exception e) {
-            e.printStackTrace();
-            ServerManager.closeServer(this);
         }
     }
 
@@ -129,15 +160,6 @@ public class Server extends NetNode {
         this.taskMap.remove(taskId);
     }
 
-    /**
-     * 获取已加载的房间列表
-     *
-     * @return 房间列表
-     */
-    public List<Integer> getRidList() {
-        return new ArrayList<>(roomMap.keySet());
-    }
-
     public ChatRoom getChatRoom(int rid) {
         return roomMap.get(rid);
     }
@@ -151,7 +173,7 @@ public class Server extends NetNode {
         synchronized (roomMap) {
             ChatRoom chatRoom = roomMap.get(roomInfo.getRid());
             if (chatRoom == null) {
-                chatRoom = new ChatRoom(roomInfo, serverInfo.getServerCode());
+                chatRoom = new ChatRoom(roomInfo, getServerInfo().getServerCode());
                 roomMap.put(roomInfo.getRid(), chatRoom);
             } else {
                 chatRoom.setRoomInfo(roomInfo);
@@ -160,11 +182,14 @@ public class Server extends NetNode {
         return this;
     }
 
-    @Override
-    public void close() throws IOException {
-        super.close();
+    /**
+     * 注销
+     */
+    public void logout() throws Exception {
+        postPacket(new PacketBody().setTaskType(TaskTypes.LOGOUT));
         for (Task task : taskMap.values()) {
-            task.terminate("Closed!");
+            task.terminate("logout!");
         }
+        disconnect();
     }
 }

@@ -24,6 +24,10 @@ public class ServerInfo {
      * 服务器端口
      */
     private Integer port;
+    /**
+     * 标签
+     */
+    private Objects tag;
 
     public String getServerCode() {
         return serverCode;
@@ -58,6 +62,15 @@ public class ServerInfo {
 
     public ServerInfo setAkeAlgorithm(String akeAlgorithm) {
         this.akeAlgorithm = akeAlgorithm;
+        return this;
+    }
+
+    public Objects getTag() {
+        return tag;
+    }
+
+    public ServerInfo setTag(Objects tag) {
+        this.tag = tag;
         return this;
     }
 
