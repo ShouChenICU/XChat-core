@@ -79,9 +79,10 @@ public abstract class ConnectBootstrap extends AbstractNetIO {
             // 用服务端公钥加密
             dat = cipher.doFinal(dat);
             doWrite(dat);
-            // 发送身份识别码
+            // 发送身份识别码和公钥
             object = new BasicBSONObject();
             object.put("UID_CODE", XChatCore.getIdentity().getUidCode());
+            object.put("PUB_KEY", XChatCore.getIdentity().getPublicKey().getEncoded());
             dat = BsonUtils.encode(object);
             dat = encryptor.encode(dat);
             doWrite(dat);

@@ -135,7 +135,16 @@ public class XChatCore {
         public static void attemptConnectServer(ServerInfo serverInfo, ProgressCallBack callBack) {
             WorkerThreadPool.execute(() -> {
                 try {
-                    Server server = ServerManager.loadServer(serverInfo);
+                    Server server = ServerManager.getServerByCode(serverInfo.getServerCode());
+                    if (server != null) {
+                        if (server.isConnect()) {
+                            callBack.terminate("repeat connect");
+                            return;
+                        } else {
+                            ServerManager.unloadServer(serverInfo.getServerCode());
+                        }
+                    }
+                    server = ServerManager.loadServer(serverInfo);
                     server.connect(callBack);
                 } catch (Exception e) {
                     callBack.terminate(Objects.requireNonNullElse(e.getMessage(), e.toString()));
@@ -158,7 +167,7 @@ public class XChatCore {
                     return;
                 }
                 try {
-                    server.disconnect();
+                    server.logout();
                     callBack.completeProgress();
                 } catch (Exception e) {
                     callBack.terminate(Objects.requireNonNullElse(e.getMessage(), e.toString()));
