@@ -69,7 +69,7 @@ public class ChatRoom {
      * @param messageInfo 消息
      */
     public ChatRoom pushMessage(MessageInfo messageInfo) {
-        synchronized (this.messageList) {
+        synchronized (this) {
             if (messageSet.add(messageInfo.getId())) {
                 this.messageList.add(messageInfo);
                 this.messageList.sort((a, b) -> Long.compare(a.getTimeStamp() - b.getTimeStamp(), 0L));
@@ -88,7 +88,7 @@ public class ChatRoom {
      * @return 消息列表
      */
     public List<MessageInfo> getMessageList() {
-        return Collections.unmodifiableList(messageList);
+        return messageList;
     }
 
     /**
@@ -101,6 +101,13 @@ public class ChatRoom {
             return null;
         } else {
             return messageList.get(messageList.size() - 1);
+        }
+    }
+
+    public void clearMessage() {
+        synchronized (this) {
+            messageList.clear();
+            messageSet.clear();
         }
     }
 

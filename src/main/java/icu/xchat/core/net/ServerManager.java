@@ -81,6 +81,20 @@ public final class ServerManager {
     }
 
     /**
+     * 卸载服务器
+     *
+     * @param serverCode 服务器识别码
+     */
+    public static void unloadServer(String serverCode) {
+        READ_WRITE_LOCK.writeLock().lock();
+        try {
+            SERVER_MAP.remove(serverCode);
+        } finally {
+            READ_WRITE_LOCK.writeLock().unlock();
+        }
+    }
+
+    /**
      * 登出全部服务器
      */
     public static void logoutAll() {

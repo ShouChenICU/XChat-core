@@ -13,9 +13,7 @@ import icu.xchat.core.net.tasks.ReceiveTask;
 import icu.xchat.core.net.tasks.Task;
 
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -136,7 +134,8 @@ public abstract class Server extends NetNode {
     protected void exceptionHandler(Exception exception) {
         exception.printStackTrace();
         try {
-            disconnect();
+//            disconnect();
+            logout();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -176,6 +175,10 @@ public abstract class Server extends NetNode {
         return roomMap.get(rid);
     }
 
+    public List<ChatRoom> getChatRoomList() {
+        return new ArrayList<>(roomMap.values());
+    }
+
     /**
      * 更新房间信息
      *
@@ -205,5 +208,6 @@ public abstract class Server extends NetNode {
         taskMap.clear();
         taskId = 1;
         disconnect();
+        ServerManager.unloadServer(this.getServerInfo().getServerCode());
     }
 }

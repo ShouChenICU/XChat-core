@@ -97,8 +97,9 @@ public class XChatCore {
      */
     public static void pushMessage(String msg, String serverCode, int rid, ProgressCallBack callBack) {
         try {
+            callBack.startProgress();
             Server server = ServerManager.getServerByCode(serverCode);
-            if (server == null) {
+            if (server == null || !server.isConnect()) {
                 callBack.terminate("Server not found");
                 return;
             }
@@ -132,12 +133,14 @@ public class XChatCore {
          * @param serverInfo 服务器信息
          */
         public static void attemptConnectServer(ServerInfo serverInfo, ProgressCallBack callBack) {
-            try {
-                Server server = ServerManager.loadServer(serverInfo);
-                server.connect(callBack);
-            } catch (Exception e) {
-                callBack.terminate(Objects.requireNonNullElse(e.getMessage(), e.toString()));
-            }
+            WorkerThreadPool.execute(() -> {
+                try {
+                    Server server = ServerManager.loadServer(serverInfo);
+                    server.connect(callBack);
+                } catch (Exception e) {
+                    callBack.terminate(Objects.requireNonNullElse(e.getMessage(), e.toString()));
+                }
+            });
         }
 
         /**
@@ -147,17 +150,20 @@ public class XChatCore {
          * @param callBack   进度回调
          */
         public static void disconnectServer(String serverCode, ProgressCallBack callBack) {
-            callBack.startProgress();
-            Server server = ServerManager.getServerByCode(serverCode);
-            if (server == null) {
-                callBack.terminate("Server not found");
-                return;
-            }
-            try {
-                server.disconnect();
-            } catch (Exception e) {
-                callBack.terminate(Objects.requireNonNullElse(e.getMessage(), e.toString()));
-            }
+            WorkerThreadPool.execute(() -> {
+                callBack.startProgress();
+                Server server = ServerManager.getServerByCode(serverCode);
+                if (server == null) {
+                    callBack.terminate("Server not found");
+                    return;
+                }
+                try {
+                    server.disconnect();
+                    callBack.completeProgress();
+                } catch (Exception e) {
+                    callBack.terminate(Objects.requireNonNullElse(e.getMessage(), e.toString()));
+                }
+            });
         }
 
         /**
@@ -202,7 +208,7 @@ public class XChatCore {
         public static void syncIdentity(String serverCode, ProgressCallBack callBack) {
             try {
                 Server server = ServerManager.getServerByCode(serverCode);
-                if (server == null) {
+                if (server == null || !server.isConnect()) {
                     callBack.terminate("Server not found");
                     return;
                 }
@@ -223,7 +229,7 @@ public class XChatCore {
         public static void syncRoom(String serverCode, ProgressCallBack callBack) {
             try {
                 Server server = ServerManager.getServerByCode(serverCode);
-                if (server == null) {
+                if (server == null || !server.isConnect()) {
                     callBack.terminate("Server not found");
                     return;
                 }
@@ -244,7 +250,7 @@ public class XChatCore {
         public static void syncUser(String serverCode, ProgressCallBack callBack) {
             try {
                 Server server = ServerManager.getServerByCode(serverCode);
-                if (server == null) {
+                if (server == null || !server.isConnect()) {
                     callBack.terminate("Server not found");
                     return;
                 }
@@ -266,7 +272,7 @@ public class XChatCore {
         public static void syncMessage(String serverCode, int rid, long time, int count, ProgressCallBack callBack) {
             try {
                 Server server = ServerManager.getServerByCode(serverCode);
-                if (server == null) {
+                if (server == null || !server.isConnect()) {
                     callBack.terminate("Server not found");
                     return;
                 }
@@ -288,7 +294,7 @@ public class XChatCore {
         public static void createRoom(String serverCode, ChatRoomInfo roomInfo, ProgressCallBack callBack) {
             try {
                 Server server = ServerManager.getServerByCode(serverCode);
-                if (server == null) {
+                if (server == null || !server.isConnect()) {
                     callBack.terminate("Server not found");
                     return;
                 }
