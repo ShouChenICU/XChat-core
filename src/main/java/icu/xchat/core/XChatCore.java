@@ -82,7 +82,7 @@ public class XChatCore {
      */
     public static synchronized void logout() {
         if (XChatCore.identity != null) {
-            // TODO: 2022/4/2
+            ServerManager.logoutAll();
             XChatCore.identity = null;
         }
     }

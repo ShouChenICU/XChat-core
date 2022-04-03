@@ -190,6 +190,8 @@ public abstract class Server extends NetNode {
         for (Task task : taskMap.values()) {
             task.terminate("logout!");
         }
+        taskMap.clear();
+        taskId = 1;
         disconnect();
     }
 }

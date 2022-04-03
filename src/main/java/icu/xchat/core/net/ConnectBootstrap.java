@@ -87,14 +87,11 @@ public abstract class ConnectBootstrap extends AbstractNetIO {
             doWrite(dat);
             status = 1;
         } else if (status == 1) {
-            System.out.println("===========1");
-
             data = encryptor.decode(data);
             object = BsonUtils.decode(data);
             if (!(boolean) object.get("STATUS")) {
                 throw new Exception(new String((byte[]) object.get("CONTENT")));
             }
-            System.out.println("===========2");
             Cipher cipher = EncryptUtils.getDecryptCipher(XChatCore.getIdentity().getPrivateKey());
             byte[] authCode = cipher.doFinal((byte[]) object.get("CONTENT"));
             object = new BasicBSONObject();

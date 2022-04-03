@@ -79,4 +79,22 @@ public final class ServerManager {
             READ_WRITE_LOCK.readLock().unlock();
         }
     }
+
+    /**
+     * 登出全部服务器
+     */
+    public static void logoutAll() {
+        READ_WRITE_LOCK.readLock().lock();
+        try {
+            for (Server server : SERVER_MAP.values()) {
+                try {
+                    server.logout();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        } finally {
+            READ_WRITE_LOCK.readLock().unlock();
+        }
+    }
 }

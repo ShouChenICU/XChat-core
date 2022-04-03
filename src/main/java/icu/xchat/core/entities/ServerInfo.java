@@ -7,6 +7,7 @@ import java.util.Objects;
  *
  * @author shouchen
  */
+@SuppressWarnings("unused")
 public class ServerInfo {
     /**
      * 服务器标识码
@@ -27,7 +28,7 @@ public class ServerInfo {
     /**
      * 标签
      */
-    private Objects tag;
+    private Object tag;
 
     public String getServerCode() {
         return serverCode;
@@ -65,11 +66,11 @@ public class ServerInfo {
         return this;
     }
 
-    public Objects getTag() {
+    public Object getTag() {
         return tag;
     }
 
-    public ServerInfo setTag(Objects tag) {
+    public ServerInfo setTag(Object tag) {
         this.tag = tag;
         return this;
     }
