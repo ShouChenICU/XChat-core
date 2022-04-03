@@ -63,8 +63,6 @@ public class ReceiveTask extends AbstractTransmitTask {
                 ChatRoom chatRoom = server.getChatRoom(messageInfo.getRid());
                 if (chatRoom != null) {
                     chatRoom.pushMessage(messageInfo);
-
-
                 } else {
                     this.terminate("本地找不到对应的聊天室！");
                     server.postPacket(new PacketBody()

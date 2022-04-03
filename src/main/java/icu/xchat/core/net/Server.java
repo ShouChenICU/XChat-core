@@ -1,5 +1,6 @@
 package icu.xchat.core.net;
 
+import icu.xchat.core.XChatCore;
 import icu.xchat.core.callbacks.interfaces.ProgressCallBack;
 import icu.xchat.core.constants.TaskTypes;
 import icu.xchat.core.entities.ChatRoom;
@@ -57,6 +58,9 @@ public abstract class Server extends NetNode {
                         @Override
                         protected void complete() {
                             callBack.completeProgress();
+                            if (XChatCore.CallBack.updateServerStatusCallback != null) {
+                                XChatCore.CallBack.updateServerStatusCallback.updateServerStatus(Server.this);
+                            }
                         }
 
                         @Override
@@ -71,6 +75,14 @@ public abstract class Server extends NetNode {
             } else {
                 callBack.terminate("is connecting...");
             }
+        }
+    }
+
+    @Override
+    public void disconnect() throws Exception {
+        super.disconnect();
+        if (XChatCore.CallBack.updateServerStatusCallback != null) {
+            XChatCore.CallBack.updateServerStatusCallback.updateServerStatus(Server.this);
         }
     }
 

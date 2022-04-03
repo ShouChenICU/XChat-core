@@ -1,8 +1,8 @@
 package icu.xchat.core;
 
 import icu.xchat.core.callbacks.interfaces.ProgressCallBack;
-import icu.xchat.core.callbacks.interfaces.UpdateOnlineServerListCallback;
 import icu.xchat.core.callbacks.interfaces.UpdateRoomInfoCallBack;
+import icu.xchat.core.callbacks.interfaces.UpdateServerStatusCallback;
 import icu.xchat.core.callbacks.interfaces.UpdateUserInfoCallBack;
 import icu.xchat.core.constants.MessageTypes;
 import icu.xchat.core.database.DaoManager;
@@ -304,17 +304,17 @@ public class XChatCore {
      */
     public static final class CallBack {
         /**
-         * 服务器列表更新回调
+         * 服务器状态更新回调
          */
-        public static UpdateOnlineServerListCallback updateOnlineServerListCallback;
+        public static UpdateServerStatusCallback updateServerStatusCallback;
 
         /**
-         * 设置房间信息更新回调
+         * 房间信息更新回调
          */
         public static UpdateRoomInfoCallBack updateRoomInfoCallBack;
 
         /**
-         * 设置用户信息更新回调
+         * 用户信息更新回调
          */
         public static UpdateUserInfoCallBack updateUserInfoCallBack;
     }
